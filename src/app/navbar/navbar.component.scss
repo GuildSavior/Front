@@ -1,0 +1,40 @@
+/* Styles de base pour la navbar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    color: #fff;
+  }
+  .navbar-brand a {
+    color: #fff;
+    font-size: 1.5rem;
+    text-decoration: none;
+  }
+  
+  .navbar-links {
+    list-style: none;
+    display: flex;
+    gap: 2.5rem;
+    margin: 0;
+    padding-top: 2em;
+    padding-bottom: 2em;
+    padding-right: 3em;
+    border: 2px solid white; /* Contour blanc de 5px */
+    border-radius: 60px; /* Arrondir les coins si souhaité */
+  }
+  
+  .navbar-links li a {
+    color: #fff;
+    text-decoration: none;
+  }
+  
+  .navbar-links li a:hover {
+    text-decoration: underline;
+  }
+  
+  .active {
+    font-weight: bold;
+    border-bottom: 2px solid #fff;
+  }
+  

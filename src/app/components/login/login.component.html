@@ -1,0 +1,18 @@
+<div class="container">
+    <form [formGroup]="FormGroup" (submit)="login()">
+        <div class="form-field">
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text" formControlName="username">
+            @if (isFieldValid('username')) {}
+            <div class="error">This field is required</div>
+        </div>
+        <div class="form-field">
+            <label for="password">password</label>
+            <input id="password" name="password" type="text" formControlName="password">
+            @if (isFieldValid('password')) {}
+            <div class="error">This field is required</div>
+        </div>
+        <button type="submit" [disabled]="FormGroup.invalid">Valider</button>
+    </form>
+</div>
+

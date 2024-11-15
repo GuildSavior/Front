@@ -1,0 +1,18 @@
+<nav class="navbar">
+    <div class="navbar-brand">
+      <a routerLink="/">GuildSavior</a> <!-- Logo ou nom de l'application -->
+    </div>
+    <div>
+        <ul class="navbar-links">
+            <li><a routerLink="/" routerLinkActive="active">Accueil</a></li>
+            <li><a routerLink="/players" routerLinkActive="active">Joueurs</a></li>
+            <li><a routerLink="/guilds" routerLinkActive="active">Guildes</a></li>
+            <li><a routerLink="/events" routerLinkActive="active">Événements</a></li>
+          </ul>
+    </div>
+    <div>
+      <p> Bonjour {{this.loginService.user()?.username}}</p>
+      <button mat-flat-button color="warn" (click)="logout()">LOGOUT</button>
+    </div>
+  </nav>
+  
