@@ -3,6 +3,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Credentials, LoginService } from '../../services/login/login.service';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { DiscordAuthService } from '../../services/discordAuth/discord-auth.service';
 
 @Component({
   selector: 'app-login',
@@ -15,6 +16,7 @@ export class LoginComponent implements OnDestroy{
   
   private loginService = inject(LoginService);
   private router = inject(Router);
+  private discordAuth = inject(DiscordAuthService);
 
   private loginSubscription: Subscription |null = null;
   invalidCredentials = false;
@@ -34,6 +36,10 @@ export class LoginComponent implements OnDestroy{
   isFieldValid(data: string){
     const FormControl = this.FormGroup.get(data);
     return FormControl?.invalid && (FormControl?.dirty || FormControl?.touched);
+  }
+
+  discordLog(): void {
+    this.discordAuth.loginWithDiscord();
   }
 
   ngOnDestroy(): void {

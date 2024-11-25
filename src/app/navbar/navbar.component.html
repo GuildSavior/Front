@@ -1,18 +1,24 @@
-<nav class="navbar">
-    <div class="navbar-brand">
-      <a routerLink="/">GuildSavior</a> <!-- Logo ou nom de l'application -->
-    </div>
-    <div>
-        <ul class="navbar-links">
-            <li><a routerLink="/" routerLinkActive="active">Accueil</a></li>
-            <li><a routerLink="/players" routerLinkActive="active">Joueurs</a></li>
-            <li><a routerLink="/guilds" routerLinkActive="active">Guildes</a></li>
-            <li><a routerLink="/events" routerLinkActive="active">Événements</a></li>
-          </ul>
-    </div>
-    <div>
-      <p> Bonjour {{this.loginService.user()?.username}}</p>
-      <button mat-flat-button color="warn" (click)="logout()">LOGOUT</button>
-    </div>
-  </nav>
-  
+<div class="navbar">
+  <ul>
+    <li>
+      <a routerLink="/dashboard" routerLinkActive="active">
+        <i class="fas fa-home"></i> Dashboard
+      </a>
+    </li>
+    <li>
+      <a routerLink="/profile" routerLinkActive="active">
+        <i class="fas fa-user"></i> Profile
+      </a>
+    </li>
+    <li>
+      <a routerLink="/settings" routerLinkActive="active">
+        <i class="fas fa-cog"></i> Settings
+      </a>
+    </li>
+    <li>
+      <a routerLink="/logout" routerLinkActive="active">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </a>
+    </li>
+  </ul>
+</div>
