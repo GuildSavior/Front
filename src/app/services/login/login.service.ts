@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { map, Observable, tap } from 'rxjs';
 import { User } from '../../models/user.model';
@@ -16,13 +16,13 @@ export class LoginService {
   private BASE_URL = 'http://127.0.0.1:8000';
   user = signal<User | null | undefined>(undefined);
   constructor() { }
-
+/*
   login(credentials: Credentials): Observable<User | null | undefined>
   {
     return this.http.post(this.BASE_URL + '/api/login/', credentials)
     .pipe(
       tap(
-        (result: any) => 
+        (result: any) =>
           {
             console.log("clem", result);
         localStorage.setItem('token', result['access_token']);
@@ -32,7 +32,7 @@ export class LoginService {
           map((result: any) => {
             return this.user()
           })
-        ) 
+        )
   }
 
   getUser(): Observable<User | null | undefined> {
@@ -44,14 +44,18 @@ export class LoginService {
       map((result: any) => { return this.user(); })
    )
   }
-
-  logout() {
-    return this.http.get(this.BASE_URL + '/api/logout').pipe(
-      tap((result: any) => {
-        localStorage.removeItem('token');
+*/
+  /*logout() {
+    const headers = new HttpHeaders({
+        Authorization: `Bearer ${localStorage.getItem('jwt_token')}`
+    });
+    return this.http.post(this.BASE_URL + '/api/logout', {}, { headers }).pipe(
+      tap(() => {
+        localStorage.clear();
         this.user.set(null);
       })
-    )
-  }
+    );
+}
+*/
 
 }

@@ -10,6 +10,11 @@ body, html {
     background-repeat: no-repeat;
     background-attachment: fixed; /* L'image reste fixe lors du défilement */
   }
-  
+
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+/* src/styles.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

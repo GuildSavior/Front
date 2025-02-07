@@ -7,36 +7,35 @@ import { UsersService } from '../../services/users/users.service';
   selector: 'app-discord-auth-callback',
   standalone: true,
   imports: [],
-  template: `<p>Connexion en cours...</p>`,
+  template: ``,
   styleUrl: './discord-auth-callback.component.scss'
 })
-export class DiscordAuthCallbackComponent{
-  userService = inject(UsersService);
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private authService: DiscordAuthService
-  ) {}
+export class DiscordAuthCallbackComponent{ constructor(
+  private authService: DiscordAuthService,
+  private userService: UsersService,
+  private route: ActivatedRoute,
+  private router: Router
+) {}
 
-  ngOnInit(): void {
-    // Utilisation de l'observable queryParams pour écouter les paramètres
-    this.route.queryParams.subscribe(params => {
-      const token = params['token']; // Récupère le token dans l'URL
+ngOnInit() {
+  this.route.queryParams.subscribe(params => {
+    if (params['token']) {
+      const token = params['token'];
+      const userId = params['id'];  // Récupère l'ID de l'utilisateur depuis l'URL
+      console.log("Token:", token);
+      console.log("User ID:", userId);
 
-      if (token) {
-        // Sauvegarder le token dans le localStorage
-        localStorage.setItem('jwt_token', token);
-        console.log('Token JWT reçu:', token);
+      // Sauvegarde le token dans localStorage
+      localStorage.setItem('token', token);
 
-        this.userService.getUserInformation(token);
+      // Si tu veux aussi stocker l'ID utilisateur
+      localStorage.setItem('userId', userId);
 
-        // Rediriger vers la page protégée du tableau de bord
-        this.router.navigate(['/dashboard']);
-      } else {
-        console.error('Token introuvable');
-      }
-    });
-  }
-
-  
+      // Redirige vers le dashboard ou une autre page
+      this.router.navigate(['/dashboard']);
+    }
+  });
 }
+
+}
+
