@@ -1,7 +1,8 @@
-import { Component, inject, OnDestroy } from '@angular/core';
-import { LoginService } from '../services/login/login.service';
+import { Component, Inject, inject, OnDestroy } from '@angular/core';
+import { LoginService } from '../../services/login/login.service';
 import { Subscription } from 'rxjs';
 import { Router, RouterModule } from '@angular/router';
+import { DiscordAuthService } from '../../services/discordAuth/discord-auth.service';
 
 @Component({
   selector: 'app-navbar',
@@ -12,8 +13,11 @@ import { Router, RouterModule } from '@angular/router';
 })
 export class NavbarComponent {
 
-  loginService = inject(LoginService);
+  discordAuth = inject(DiscordAuthService);
   router = inject(Router);
   private logoutSubscription: Subscription | null = null;
 
+  logout(){
+    this.discordAuth.logout();
+  }
 }
