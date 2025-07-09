@@ -1,14 +1,14 @@
-<nav class="bg-[#1a1a2e] px-6 py-3 flex justify-between items-center">
-  <div class="text-white font-bold text-xl">
+<nav class="navbar px-6 py-3 flex justify-between items-center">
+  <div class="logo font-bold text-xl">
     GuildSavior
   </div>
-  <ul class="flex space-x-8 text-white">
-    <li><a href="#" class="hover:text-[#bc7b1a]">Features</a></li>
-    <li><a href="#" class="hover:text-[#bc7b1a]">Pricing</a></li>
-    <li><a href="#" class="hover:text-[#bc7b1a]">FAQ</a></li>
-  </ul>
-  <div>
-    <button (click)="discordLog()" class="bg-[#bc7b1a] text-[#271f2b] px-4 py-1 rounded hover:bg-yellow-600 transition">
+  <div class="flex items-center space-x-8">
+    <ul class="flex space-x-8 text-white">
+      <li><a href="#" class="nav-link">Features</a></li>
+      <li><a href="#" class="nav-link">Pricing</a></li>
+      <li><a href="#" class="nav-link">FAQ</a></li>
+    </ul>
+    <button (click)="discordLog()" class="nav-btn">
       Sign In
     </button>
   </div>

@@ -9,6 +9,7 @@ import { HomeComponent } from './components/home/home.component';
 import { AuthGuard } from './auth.guard';
 import { MainLayoutComponent } from './components/layouts/main-layout/main-layout.component';
 import { LandingLayoutComponent } from './components/layouts/landing-layout/landing-layout.component';
+import { LandingPageComponent } from './components/landing-features/landing/landing-page.component';
 
 export const routes: Routes = [
   // Routes sans layout
@@ -21,8 +22,7 @@ export const routes: Routes = [
     component: LandingLayoutComponent,
     children: [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
-      { path: 'home', component: HomeComponent },
-      { path: 'login', component: LoginComponent },
+      { path: 'home', component: LandingPageComponent },
       { path: 'register', component: RegisterComponent },
       { path: 'logout', component: LogoutComponent },
     ],

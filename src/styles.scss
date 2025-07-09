@@ -1,18 +1,19 @@
 /* Applique un fond d'écran sur toute la page */
+@font-face {
+  font-family: 'Gabarito';
+  src: url('/assets/fonts/Gabarito-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900; /* variable font, plage de poids */
+  font-style: normal;
+  font-display: swap;
+}
 body, html {
     margin: 0;
     padding: 0;
     height: 100%;
     width: 100%;
     background: var(--main-dark-purple-background);
-    background-size: cover;    /* L'image occupe tout l'écran */
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed; /* L'image reste fixe lors du défilement */
+    font-family: 'Gabarito', sans-serif;
   }
-
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 /* src/styles.css */
 @tailwind base;
@@ -27,7 +28,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   --main-purple-for-button-and-text: #9C62FB;
   --purple-for-stroke: #201544;
   --purple-background-div: #313158;
-  --light-blue-home: #40345F;
+  --light-purple-home: #40345F;
   --light-blue-home: #2A6E98;
 
 }
