@@ -1,19 +1,18 @@
-<div @if(user)>
-  <h2>Informations Utilisateur</h2>
+<!-- Si user est défini, on affiche les infos -->
+<div class="dashboard" *ngIf="user; else loading">
+  <h2 class="text-2xl font-bold mb-4">Informations Utilisateur</h2>
 
   <p><strong>Nom :</strong> {{ user.name }}</p>
   <p><strong>Email :</strong> {{ user.email }}</p>
   <p><strong>ID Discord :</strong> {{ user.discord_id }}</p>
   <p><strong>Avatar :</strong></p>
-  <img [src]="user.avatar" alt="Avatar" width="100" />
+  <img [src]="user.avatar" alt="Avatar" width="100" class="rounded shadow" />
 
   <p><strong>Statut :</strong> {{ user.statut }}</p>
   <p><strong>Total DKP :</strong> {{ user.total_dkp }}</p>
-
-  <!-- Autres informations si nécessaires -->
 </div>
 
-<!-- Si l'utilisateur n'est pas encore chargé, tu peux afficher un message de chargement -->
-<div @if(user)>
-  <p>Chargement des informations...</p>
-</div>
+<!-- Template de fallback pendant le chargement -->
+<ng-template #loading>
+  <p class="text-gray-500">Chargement des informations...</p>
+</ng-template>

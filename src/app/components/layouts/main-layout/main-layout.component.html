@@ -1,5 +1,4 @@
-
-<div class="navbar h-screen w-64 fixed top-0 left-0 pt-5">
+<div class="navbar h-screen w-64 fixed top-0 left-0 pt-5 z-10">
   <ul class="list-none p-0 w-full">
     <li class="w-full">
       <a
@@ -30,7 +29,7 @@
     </li>
     <li class="w-full">
       <a
-      (click)="logout()"
+        (click)="logout()"
         class="flex items-center px-5 py-3 text-[#ecf0f1] text-base transition-colors duration-300 w-full hover:bg-[#41345e] hover:text-[#bc7b1a]">
         <i class="fas fa-sign-out-alt mr-3"></i>
         <span>Logout</span>
@@ -38,5 +37,8 @@
     </li>
   </ul>
 </div>
- <!-- Ta navbar actuelle -->
-<router-outlet></router-outlet>
+
+<!-- CONTENU PRINCIPAL À DROITE -->
+<div class="ml-64 h-screen overflow-auto p-6 text-[#ecf0f1]">
+  <router-outlet></router-outlet>
+</div>

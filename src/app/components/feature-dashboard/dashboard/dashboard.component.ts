@@ -4,11 +4,12 @@ import { UsersService } from '../../../services/users/users.service';
 import { DiscordAuthService } from '../../../services/discordAuth/discord-auth.service';
 import { User } from '../../../models/user.model';
 import { Observable } from 'rxjs';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })

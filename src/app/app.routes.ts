@@ -11,15 +11,24 @@ import { MainLayoutComponent } from './components/layouts/main-layout/main-layou
 import { LandingLayoutComponent } from './components/layouts/landing-layout/landing-layout.component';
 
 export const routes: Routes = [
+  // Routes sans layout
+  { path: 'discord-callback', component: DiscordAuthCallbackComponent },
+  { path: 'error', component: ErrorComponent },
 
-{
+  // Layout landing (public pages)
+  {
     path: '',
     component: LandingLayoutComponent,
     children: [
+      { path: '', redirectTo: 'home', pathMatch: 'full' },
       { path: 'home', component: HomeComponent },
-      { path: '', redirectTo: 'home', pathMatch: 'full' }, 
+      { path: 'login', component: LoginComponent },
+      { path: 'register', component: RegisterComponent },
+      { path: 'logout', component: LogoutComponent },
     ],
   },
+
+  // Layout main (après auth)
   {
     path: '',
     component: MainLayoutComponent,
@@ -28,14 +37,8 @@ export const routes: Routes = [
       { path: 'profile', component: DashboardComponent },
     ],
   },
+
+  // Fallback
   { path: '**', redirectTo: 'home' },
-
-  // Routes sans layout (login, register, callback, logout, error)
-  { path: 'login', component: LoginComponent },
-  { path: 'register', component: RegisterComponent },
-  { path: 'discord-callback', component: DiscordAuthCallbackComponent },
-  { path: 'logout', component: LogoutComponent },
-  { path: 'error', component: ErrorComponent },
-
 ];
 
