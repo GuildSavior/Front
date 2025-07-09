@@ -1,0 +1,201 @@
+.plan-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2.5rem;
+    padding: 2rem 1rem;
+    background: transparent;
+    max-width: 900px;
+    margin: 2rem auto;
+}
+
+.plan-container h1 {
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+    color: #fff; // blanc
+    text-align: center;
+    width: 100%;
+}
+
+.plan-container > p {
+    color: #8F8F8F;
+    font-size: 1rem;
+    margin-bottom: 2.5rem; // plus d'espace ici
+}
+
+.plans-wrapper {
+    display: flex;
+    flex-direction: row;
+    gap: 3rem; // plus d'espace entre les deux plans
+    justify-content: center;
+    width: 100%;
+}
+
+.free-plan,
+.premium-plan {
+    border-radius: 16px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.10);
+    padding: 2.5rem 2.5rem;
+    width: 600px;           // largeur augmentée
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: 
+        transform 0.25s cubic-bezier(0.4,0.2,0.2,1),
+        box-shadow 0.25s cubic-bezier(0.4,0.2,0.2,1);
+}
+
+.free-plan:hover,
+.premium-plan:hover {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    z-index: 2;
+}
+
+.free-plan {
+    background: rgba(42, 110, 152, 0.1); // couleur de --light-blue-home avec 10% d'opacité
+    border: 2px solid var(--light-blue-home);
+}
+
+.premium-plan {
+    background: rgba(64, 52, 95, 0.1); // couleur de --light-purple-home avec 10% d'opacité
+    border: 2px solid var(--light-purple-home);
+}
+
+.free-plan h3,
+.premium-plan h3 {
+    font-size: 1.5rem;      // plus gros
+    color: #fff;            // blanc
+    font-weight: bold;      // en gras
+    margin-bottom: 0.5rem;
+}
+
+.euro {
+    font-size: 2.2rem;
+    font-weight: normal; // plus de bold ici
+    color: #fff;
+    margin: 0.5rem 0;
+}
+
+.euro span {
+    font-size: 1rem;
+    color: #8F8F8F; // gris comme demandé
+    font-weight: normal;
+}
+
+.features-show {
+    margin: 1.5rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem; // plus d'espace entre chaque feature
+    align-items: flex-start;
+    width: 100%;
+}
+
+.features-show span {
+    color: #fff;
+    font-size: 1.08rem;
+    padding: 0.5rem 0 0.5rem 2rem; // plus de hauteur et de padding à gauche
+    position: relative;
+    text-align: left;
+    width: 100%;
+    border-radius: 6px;
+}
+
+.features-show span::before {
+    content: "✔";
+    color: #fff;
+    position: absolute;
+    left: 0;
+    font-size: 1rem;
+}
+
+button {
+    background: var(--main-purple-for-button-and-text);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.7rem 1.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background 0.2s;
+}
+
+button:hover {
+    background: var(--main-purple-for-title);
+}
+
+.free-plan > span,
+.premium-plan > span {
+    color: #8F8F8F;
+    font-size: 1rem;
+    margin-top: 0.2rem;
+    margin-bottom: 0.7rem;
+    display: block;
+}
+
+.free-plan button {
+    width: 75%;
+    background: var(--light-blue-home);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.7rem 0;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background 0.2s;
+}
+
+.free-plan button:hover {
+    background: #1e4e6a; // version plus foncée, optionnel
+}
+
+.premium-plan button {
+    width: 75%;
+    background: var(--light-purple-home);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.7rem 0;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background 0.2s;
+}
+
+.premium-plan button:hover {
+    background: #2a2340; // version plus foncée, optionnel
+}
+
+@media (max-width: 1100px) {
+    .free-plan, .premium-plan {
+        width: 90%;
+        max-width: 500px;
+    }
+    .plans-wrapper {
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 800px) {
+    .plans-wrapper {
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+    }
+    .free-plan, .premium-plan {
+        width: 100%;
+        max-width: 350px;
+        padding: 2rem 1rem;
+    }
+    .free-plan button,
+    .premium-plan button {
+        width: 100%;
+    }
+    .plan-container {
+        padding: 1rem 0.2rem;
+    }
+}

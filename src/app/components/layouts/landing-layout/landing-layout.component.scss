@@ -1,0 +1,67 @@
+.navbar {
+  border-bottom: 2px solid var(--purple-for-stroke);
+  background: transparent;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar .text-white {
+  color: var(--main-purple-for-button-and-text); // violet avec ta variable
+  font-weight: bold;
+}
+
+.nav-link {
+  color: #fff;
+  transition: color 0.2s;
+  font-weight: 500;
+  text-decoration: none;
+  position: relative;
+}
+
+.nav-link::after {
+  content: "";
+  display: block;
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 0;
+  height: 2px;
+  background: var(--main-purple-for-button-and-text);
+  transition: width 0.3s cubic-bezier(0.4, 0.2, 0.2, 1);
+}
+
+.nav-link:hover {
+  color: var(--main-purple-for-button-and-text);
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+.nav-btn {
+  background: var(--main-purple-for-button-and-text);
+  color: #fff;
+  padding: 0.5rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: normal;
+  font-size: 1rem;
+  margin-left: 2rem;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.nav-btn:hover {
+  background: var(--main-purple-for-title);
+  transform: translateY(-3px) scale(1.04);
+  box-shadow: 0 6px 24px rgba(76, 34, 156, 0.18);
+}
+
+.logo {
+  color: var(--main-purple-for-title);
+}
