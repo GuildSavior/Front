@@ -1,12 +1,12 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DiscordAuthService } from '../../services/discordAuth/discord-auth.service';
 import { UsersService } from '../../services/users/users.service';
 
 @Component({
   selector: 'app-discord-auth-callback',
   standalone: true,
-  imports: [],
+  imports: [RouterModule],
   template: ``,
   styleUrl: './discord-auth-callback.component.scss'
 })

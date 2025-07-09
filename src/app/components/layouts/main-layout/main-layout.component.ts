@@ -1,19 +1,19 @@
 import { Component, Inject, inject, OnDestroy } from '@angular/core';
-import { LoginService } from '../../services/login/login.service';
+import { LoginService } from '../../../services/login/login.service';
 import { Subscription } from 'rxjs';
 import { Router, RouterModule } from '@angular/router';
-import { DiscordAuthService } from '../../services/discordAuth/discord-auth.service';
-import { AuthService } from '../../services/auth.service';
+import { DiscordAuthService } from '../../../services/discordAuth/discord-auth.service';
+import { AuthService } from '../../../services/auth.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-navbar',
+  selector: 'app-main-layout',
   standalone: true,
   imports: [RouterModule, CommonModule],
-  templateUrl: './navbar.component.html',
-  styleUrl: './navbar.component.scss'
+  templateUrl: './main-layout.component.html',
+  styleUrl: './main-layout.component.scss'
 })
-export class NavbarComponent {
+export class MainLayoutComponent {
 
   discordAuth = inject(DiscordAuthService);
   router = inject(Router);
