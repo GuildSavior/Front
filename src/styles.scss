@@ -4,7 +4,7 @@ body, html {
     padding: 0;
     height: 100%;
     width: 100%;
-    background: linear-gradient(to right, rgb(22, 5, 23), rgb(43, 10, 54));
+    background: var(--main-dark-purple-background);
     background-size: cover;    /* L'image occupe tout l'écran */
     background-position: center;
     background-repeat: no-repeat;
@@ -18,3 +18,16 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+:root {
+  --main-dark-purple-background: #0B0B1A;
+  --blue-dark-first-layer: #12122A;
+  --main-purple-for-title: #7635E2;
+  --main-purple-for-button-and-text: #9C62FB;
+  --purple-for-stroke: #201544;
+  --purple-background-div: #313158;
+  --light-blue-home: #40345F;
+  --light-blue-home: #2A6E98;
+
+}

@@ -1,4 +1,4 @@
-<div class="h-screen w-64 bg-[#271f2b] fixed top-0 left-0 pt-5">
+<div class="navbar h-screen w-64 fixed top-0 left-0 pt-5">
   <ul class="list-none p-0 w-full">
     <li class="w-full">
       <a
@@ -9,7 +9,7 @@
         <span>Accueil</span>
       </a>
     </li>
-    <li class="w-full">
+    <li *ngIf="showDashboard" class="w-full">
       <a
         routerLink="/dashboard"
         routerLinkActive="active"
@@ -18,22 +18,13 @@
         <span>Dashboard</span>
       </a>
     </li>
-    <li class="w-full">
+    <li *ngIf="showDashboard" class="w-full">
       <a
         routerLink="/profile"
         routerLinkActive="active"
         class="flex items-center px-5 py-3 text-[#ecf0f1] text-base transition-colors duration-300 w-full hover:bg-[#41345e] hover:text-[#bc7b1a]">
         <i class="fas fa-user mr-3"></i>
         <span>Profile</span>
-      </a>
-    </li>
-    <li class="w-full">
-      <a
-        routerLink="/settings"
-        routerLinkActive="active"
-        class="flex items-center px-5 py-3 text-[#ecf0f1] text-base transition-colors duration-300 w-full hover:bg-[#41345e] hover:text-[#bc7b1a]">
-        <i class="fas fa-cog mr-3"></i>
-        <span>Settings</span>
       </a>
     </li>
     <li class="w-full">
