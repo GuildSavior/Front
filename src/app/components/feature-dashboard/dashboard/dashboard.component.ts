@@ -5,6 +5,7 @@ import { DiscordAuthService } from '../../../services/discordAuth/discord-auth.s
 import { User } from '../../../models/user.model';
 import { Observable } from 'rxjs';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -13,9 +14,10 @@ import { CommonModule } from '@angular/common';
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
   userService = inject(UsersService);
-  authService = inject(DiscordAuthService)
+  discordAuthService = inject(DiscordAuthService);
+  authService = inject(AuthService); 
   user: User = {
     id: 0,
     name: '',
@@ -31,16 +33,33 @@ export class DashboardComponent {
     guild_id: null,
     role_id: null,
   };
+  notification: string | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
   ) {}
 
   ngOnInit() {
-    const token = localStorage.getItem('token');
-    this.userService.getUserInformation(token).subscribe((user: any) => {
-        this.user = user.user; // Stocke l'utilisateur récupéré dans une variable
-        console.log(user);
+    // Vérifie si l'utilisateur est connecté via l'API (le cookie sera envoyé automatiquement)
+    this.authService.checkAuthStatus().subscribe({
+      next: (user) => {
+        if (user) {
+          this.user = user;
+          
+          // Traite les paramètres de paiement
+          this.route.queryParams.subscribe(params => {
+            if (params['payment'] === 'success') {
+              this.notification = 'Abonnement premium activé avec succès ! 🎉';
+              this.router.navigate([], { queryParams: {} });
+            }
+          });
+        } else {
+          // Pas connecté, on force le login Discord et on garde l'intention
+          localStorage.setItem('pendingDashboardSuccess', '1');
+          this.discordAuthService.loginWithDiscord();
+        }
+      }
     });
-}
+  }
 }

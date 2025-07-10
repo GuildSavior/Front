@@ -1,5 +1,6 @@
 <div class="navbar h-screen w-64 fixed top-0 left-0 pt-5 z-10">
   <ul class="list-none p-0 w-full">
+    <!-- Accueil - Toujours visible -->
     <li class="w-full">
       <a
         routerLink="/home"
@@ -9,30 +10,15 @@
         <span>Accueil</span>
       </a>
     </li>
+
+    <!-- Dashboard -->
     <li *ngIf="showDashboard" class="w-full">
       <a
         routerLink="/dashboard"
         routerLinkActive="active"
         class="flex items-center px-5 py-3 text-[#ecf0f1] text-base transition-colors duration-300 w-full hover:bg-[#41345e] hover:text-[#bc7b1a]">
-        <i class="fas fa-home mr-3"></i>
+        <i class="fas fa-tachometer-alt mr-3"></i>
         <span>Dashboard</span>
-      </a>
-    </li>
-    <li *ngIf="showDashboard" class="w-full">
-      <a
-        routerLink="/profile"
-        routerLinkActive="active"
-        class="flex items-center px-5 py-3 text-[#ecf0f1] text-base transition-colors duration-300 w-full hover:bg-[#41345e] hover:text-[#bc7b1a]">
-        <i class="fas fa-user mr-3"></i>
-        <span>Profile</span>
-      </a>
-    </li>
-    <li class="w-full">
-      <a
-        (click)="logout()"
-        class="flex items-center px-5 py-3 text-[#ecf0f1] text-base transition-colors duration-300 w-full hover:bg-[#41345e] hover:text-[#bc7b1a]">
-        <i class="fas fa-sign-out-alt mr-3"></i>
-        <span>Logout</span>
       </a>
     </li>
   </ul>
