@@ -1,93 +1,307 @@
-.navbar{
-    background-color: var(--blue-dark-first-layer);
-    border: 2px solid var(--purple-for-stroke);
+.navbar {
+  background: var(--blue-dark-first-layer);
+  border-right: 2px solid var(--purple-for-stroke);
 }
 
-.navbar.sidebar-collapsed {
-  width: 4rem;
-  background: #232347;
-  transition: width 0.3s;
-  overflow-x: hidden;
+// ✅ Sidebar repliée par défaut
+.sidebar-collapsed {
+  width: 4rem; /* 64px */
+
+  .sidebar-label {
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s ease;
+  }
 }
 
-.sidebar-logo {
-  width: 100%;
-  height: 4rem;
-  justify-content: center;
-  align-items: center;
-  display: flex;
+// ✅ Sidebar dépliée au hover
+.sidebar-expanded {
+  width: 16rem; /* 256px */
+
+  .sidebar-label {
+    opacity: 1;
+    transform: translateX(0);
+    transition: all 0.3s ease;
+  }
 }
 
+// ✅ Style des liens
 .sidebar-link {
   display: flex;
   align-items: center;
-  justify-content: center;
+  padding: 0.75rem 1rem;
+  margin: 0.25rem;
+  border-radius: 0.5rem;
   color: #ecf0f1;
-  padding: 1.2rem 0;
-  width: 100%;
-  transition: background 0.2s, color 0.2s;
+  text-decoration: none;
+  transition: all 0.3s ease;
   position: relative;
-  font-size: 1.3rem;
-  gap: 1.2rem;
-}
-
-.sidebar-label {
-  opacity: 0;
-  width: 0;
   overflow: hidden;
-  white-space: nowrap;
-  transition: opacity 0.2s, width 0.2s;
-  margin-left: 0;
-  font-size: 1rem;
+
+  i {
+    width: 1.5rem;
+    text-align: center;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background: var(--purple-for-stroke);
+    color: var(--main-purple-for-button-and-text);
+  }
+
+  &.active {
+    background: var(--purple-for-stroke);
+    color: var(--main-purple-for-button-and-text);
+    font-weight: 600;
+  }
 }
 
-.navbar.sidebar-collapsed:hover,
-.navbar.sidebar-collapsed:focus-within {
-  width: 15rem;
+// ✅ Style du logo
+.sidebar-logo {
+  border-bottom: 1px solid var(--purple-for-stroke);
+  margin-bottom: 1rem;
+  padding: 1rem 0;
+
+  span {
+    background: linear-gradient(
+      45deg,
+      var(--main-purple-for-button-and-text),
+      var(--orange-accent),
+      var(--main-purple-for-title),
+      var(--orange-hover),
+      var(--main-purple-for-button-and-text)
+    );
+    background-size: 300% 300%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-fill-color: transparent;
+    animation: rainbow-sweep 3s ease-in-out infinite;
+    transition: all 0.3s ease;
+    display: inline-block;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 20px rgba(156, 98, 251, 0.3);
+    
+    // ✅ Effet de glow subtil
+    filter: drop-shadow(0 0 8px rgba(156, 98, 251, 0.4));
+  }
 }
 
-.navbar.sidebar-collapsed:hover .sidebar-label,
-.navbar.sidebar-collapsed:focus-within .sidebar-label {
-  opacity: 1;
-  width: auto;
-  margin-left: 1rem;
+// 🌈 Animation de balayage des couleurs
+@keyframes rainbow-sweep {
+  0% {
+    background-position: 0% 50%;
+    transform: scale(1);
+  }
+  25% {
+    background-position: 50% 50%;
+    transform: scale(1.02);
+  }
+  50% {
+    background-position: 100% 50%;
+    transform: scale(1);
+  }
+  75% {
+    background-position: 50% 100%;
+    transform: scale(1.01);
+  }
+  100% {
+    background-position: 0% 50%;
+    transform: scale(1);
+  }
 }
 
-.sidebar-link:hover {
-  background: #41345e;
-  color: #bc7b1a;
+// ✅ Animation plus rapide au hover
+.sidebar-logo:hover span {
+  animation: rainbow-sweep-fast 1.5s ease-in-out infinite;
+  filter: drop-shadow(0 0 15px rgba(156, 98, 251, 0.6));
 }
 
-.sidebar-logout {
+@keyframes rainbow-sweep-fast {
+  0% {
+    background-position: 0% 50%;
+    transform: scale(1);
+  }
+  50% {
+    background-position: 100% 50%;
+    transform: scale(1.05);
+  }
+  100% {
+    background-position: 0% 50%;
+    transform: scale(1);
+  }
+}
+
+// ✅ Style spécifique pour sidebar repliée (juste "G")
+.sidebar-collapsed .sidebar-logo span {
+  font-size: 1.8rem;
+  text-align: center;
   width: 100%;
+  display: flex;
   justify-content: center;
   align-items: center;
+}
+
+// ✅ Style spécifique pour sidebar dépliée ("GuildSavior")
+.sidebar-expanded .sidebar-logo span {
+  font-size: 1.5rem;
+  text-align: center;
+  width: 100%;
   display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.ml-16.sidebar-content {
-  margin-left: 4rem;
-  transition: margin-left 0.3s;
+// ✅ Style du contenu principal
+.sidebar-content {
+  padding: 1.5rem;
+  min-height: 100vh;
+  background: var(--main-dark-purple-background);
 }
 
-.navbar.sidebar-collapsed:hover ~ .sidebar-content,
-.navbar.sidebar-collapsed:focus-within ~ .sidebar-content {
-  margin-left: 15rem;
+// 🎨 Style du bouton de déconnexion
+.logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center; // ✅ Centré par défaut
+  width: 100%;
+  padding: 0.75rem;
+  margin: 0.25rem;
+  border: none;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, var(--main-purple-for-button-and-text), var(--orange-accent));
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(156, 98, 251, 0.3);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(156, 98, 251, 0.4);
+    background: linear-gradient(135deg, var(--main-purple-for-title), var(--orange-hover));
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(156, 98, 251, 0.3);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.8;
+    transform: none;
+  }
+
+  // ✅ Effet de brillance plus subtil
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent); // ✅ Réduit l'opacité de 0.2 à 0.1
+    transition: left 0.7s; // ✅ Plus lent pour être plus subtil
+  }
+
+  &:hover::before {
+    left: 100%;
+  }
 }
 
-.loader {
-  display: inline-block;
-  width: 1.3em;
-  height: 1.3em;
-  border: 3px solid #bc7b1a;
+.logout-content {
+  display: flex;
+  align-items: center;
+  justify-content: center; // ✅ Centré
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+.logout-icon {
+  font-size: 1.125rem;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.logout-text {
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  font-size: 0.875rem;
+  
+  // ✅ Le texte apparaît quand la sidebar est dépliée
+  .sidebar-expanded & {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  
+  // OU utilise la classe 'show' comme avant
+  &.show {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// 🎨 Animation de chargement
+.logout-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.logout-spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
   border-radius: 50%;
-  border-top: 3px solid transparent;
-  animation: spin 0.7s linear infinite;
-  margin-right: 0.7em;
-  vertical-align: middle;
+  animation: logout-spin 1s linear infinite;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg);}
-  100% { transform: rotate(360deg);}
+@keyframes logout-spin {
+  0% { 
+    transform: rotate(0deg); 
+  }
+  100% { 
+    transform: rotate(360deg); 
+  }
+}
+
+// ✅ Style pour sidebar repliée
+.sidebar-collapsed .logout-btn {
+  justify-content: center; // ✅ Centré quand replié
+  padding: 0.75rem;
+  width: 3rem;
+  height: 3rem;
+  
+  .logout-icon {
+    margin-right: 0; // ✅ Pas de marge quand centré
+  }
+  
+  .logout-text {
+    display: none; // Cache complètement le texte quand replié
+  }
+}
+
+// ✅ Style pour sidebar dépliée
+.sidebar-expanded .logout-btn {
+  justify-content: center; // ✅ Reste centré même quand déplié
+  width: 100%;
+  
+  .logout-icon {
+    margin-right: 0.75rem; // ✅ Espace entre icône et texte
+  }
+  
+  .logout-text {
+    display: block; // Montre le texte quand déplié
+  }
 }

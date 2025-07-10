@@ -16,6 +16,8 @@ export class MainLayoutComponent implements OnInit {
   showDashboard = false;
   isAuthenticated = false;
   user: any = null;
+  isExpanded = false;
+  isLoggingOut = false; // Ajout du loader
 
   private userService = inject(UsersService);
   private authService = inject(AuthService);
@@ -49,22 +51,27 @@ export class MainLayoutComponent implements OnInit {
     this.discordAuthService.loginWithDiscord();
   }
 
+  // ✅ Fonction pour déplier la sidebar
+  expandSidebar() {
+    this.isExpanded = true;
+  }
+
+  // ✅ Fonction pour replier la sidebar
+  collapseSidebar() {
+    this.isExpanded = false;
+  }
+
   // ✅ Fonction de logout (délègue au service)
   logout() {
+    this.isLoggingOut = true;
     this.authService.logout();
     // Met à jour l'état local
     this.isAuthenticated = false;
     this.showDashboard = false;
     this.user = null;
+    // Reset après un délai
+    setTimeout(() => {
+      this.isLoggingOut = false;
+    }, 1000);
   }
-
-  // ✅ Navigation vers le profil
-  goToProfile() {
-    this.router.navigate(['/profile']);
-  discordAuth = inject(DiscordAuthService);
-  router = inject(Router);
-  auth = inject(AuthService)
-  private logoutSubscription: Subscription | null = null;
-
-  isLoggingOut = false; // Ajout du loader
 }

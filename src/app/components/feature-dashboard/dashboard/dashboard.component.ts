@@ -1,19 +1,19 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router, ActivatedRoute } from '@angular/router';
+import { trigger, transition, style, animate } from '@angular/animations';
 import { UsersService } from '../../../services/users/users.service';
 import { DiscordAuthService } from '../../../services/discordAuth/discord-auth.service';
-import { User } from '../../../models/user.model';
-import { Observable } from 'rxjs';
-import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../services/auth.service';
+import { PlanService } from '../../../services/plan/plan.service'; // ✅ Nouveau service
+import { User } from '../../../models/user.model';
 import { Player } from '../../../models/player.model';
 import { FormsModule } from '@angular/forms';
-import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule], 
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
   animations: [
@@ -30,11 +30,18 @@ import { trigger, transition, style, animate } from '@angular/animations';
   ]
 })
 export class DashboardComponent implements OnInit {
-export class DashboardComponent {
   showSensitive = false;
   userService = inject(UsersService);
   discordAuthService = inject(DiscordAuthService);
-  authService = inject(AuthService); 
+  authService = inject(AuthService);
+  planService = inject(PlanService); // ✅ Injection du service
+  route = inject(ActivatedRoute);
+  router = inject(Router);
+  
+  player: Player= {
+    classe: 'dps',
+    events_joined: 0
+  };
   user: User = {
     id: 0,
     email: '',
@@ -49,35 +56,54 @@ export class DashboardComponent {
     refresh_token: null,
     guild_id: null,
     role_id: null,
+    is_premium: false,
+    subscription: null,
+    guild: null,
+    role: null
   };
+
+  // 🆕 Notification pour l'activation du plan Premium
   notification: string | null = null;
 
-  player: Player = { classe: 'support' };
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-  ) {}
 
   ngOnInit() {
-    // Vérifie si l'utilisateur est connecté via l'API (le cookie sera envoyé automatiquement)
     this.authService.checkAuthStatus().subscribe({
       next: (user) => {
         if (user) {
           this.user = user;
           
-          // Traite les paramètres de paiement
+          // ✅ Log des infos Premium
+          console.log('📊 Statut Premium:', this.planService.isPremiumActive(this.user));
+          console.log('📅 Détails subscription:', this.planService.getSubscriptionDetails(this.user));
+          
+          // Traite les paramètres de paiement...
           this.route.queryParams.subscribe(params => {
             if (params['payment'] === 'success') {
               this.notification = 'Abonnement premium activé avec succès ! 🎉';
-              this.router.navigate([], { queryParams: {} });
+              this.router.navigate(['/dashboard'], { 
+                queryParams: {},
+                replaceUrl: true 
+              });
             }
           });
         } else {
-          // Pas connecté, on force le login Discord et on garde l'intention
           localStorage.setItem('pendingDashboardSuccess', '1');
           this.discordAuthService.loginWithDiscord();
         }
       }
     });
+  }
+
+  // ✅ Méthodes helper pour le template
+  isPremium(): boolean {
+    return this.planService.isPremiumActive(this.user);
+  }
+
+  getSubscriptionInfo() {
+    return this.planService.getSubscriptionDetails(this.user);
+  }
+
+  getPremiumBadgeClass(): string {
+    return this.planService.getPremiumBadgeClass(this.user);
   }
 }

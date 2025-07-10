@@ -19,7 +19,8 @@ p{
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(30px);}
   to { opacity: 1; transform: translateY(0);}
-  
+}
+
 .dashboard-container {
   display: flex;
   gap: 2rem;
@@ -135,6 +136,71 @@ select {
 
 .sensitive-info {
   margin-top: 0.5rem;
+}
+
+// ✅ Styles pour le statut Premium
+.premium-status {
+  margin-bottom: 1.5rem;
+}
+
+.premium-badge {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+  border: 2px solid;
+
+  i {
+    font-size: 1.5rem;
+    margin-right: 0.75rem;
+  }
+
+  .premium-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .premium-label {
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .premium-expiry, .premium-upgrade {
+    font-size: 0.75rem;
+    opacity: 0.8;
+  }
+}
+
+.premium-active {
+  background: linear-gradient(135deg, var(--main-purple-for-button-and-text), var(--orange-accent));
+  border-color: var(--orange-hover);
+  color: white;
+
+  i {
+    color: #ffd700;
+    animation: premium-glow 2s ease-in-out infinite;
+  }
+}
+
+.premium-none {
+  background: var(--purple-background-div);
+  border-color: var(--purple-for-stroke);
+  color: var(--main-purple-for-button-and-text);
+
+  &:hover {
+    border-color: var(--main-purple-for-button-and-text);
+    cursor: pointer;
+  }
+}
+
+@keyframes premium-glow {
+  0%, 100% {
+    text-shadow: 0 0 5px #ffd700;
+  }
+  50% {
+    text-shadow: 0 0 15px #ffd700, 0 0 25px #ffd700;
+  }
 }
 
 @media (max-width: 800px) {

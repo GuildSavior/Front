@@ -1,33 +1,17 @@
-
-<div class="navbar h-screen w-64 fixed top-0 left-0 pt-5 z-10">
-  <ul class="list-none p-0 w-full">
-    <!-- Accueil - Toujours visible -->
-    <li class="w-full">
-      <a
-        routerLink="/home"
-        routerLinkActive="active"
-        class="flex items-center px-5 py-3 text-[#ecf0f1] text-base transition-colors duration-300 w-full hover:bg-[#41345e] hover:text-[#bc7b1a]">
-        <i class="fas fa-home mr-3"></i>
-        <span>Accueil</span>
-      </a>
-    </li>
-
-    <!-- Dashboard -->
-    <li *ngIf="showDashboard" class="w-full">
-      <a
-        routerLink="/dashboard"
-        routerLinkActive="active"
-        class="flex items-center px-5 py-3 text-[#ecf0f1] text-base transition-colors duration-300 w-full hover:bg-[#41345e] hover:text-[#bc7b1a]">
-        <i class="fas fa-tachometer-alt mr-3"></i>
-        <span>Dashboard</span>
-      </a>
-    </li>
-  </ul>
-<div class="navbar sidebar-collapsed fixed top-0 left-0 h-screen z-10 flex flex-col justify-between transition-all duration-300">
+<div class="navbar sidebar-collapsed fixed top-0 left-0 h-screen z-10 flex flex-col justify-between transition-all duration-300" 
+     [class.sidebar-expanded]="isExpanded"
+     (mouseenter)="expandSidebar()" 
+     (mouseleave)="collapseSidebar()">
+  
+  <!-- Header avec logo -->
   <div>
     <div class="sidebar-logo flex items-center justify-center h-20">
-      <span class="text-2xl font-extrabold text-[#bc7b1a] tracking-wide select-none">G</span>
+      <span class="text-2xl font-extrabold text-[#bc7b1a] tracking-wide select-none">
+        {{ isExpanded ? 'GuildSavior' : 'G' }}
+      </span>
     </div>
+    
+    <!-- Menu de navigation -->
     <ul class="list-none p-0 w-full">
       <li>
         <a
@@ -67,23 +51,31 @@
       </li>
     </ul>
   </div>
+  
+  <!-- Footer avec logout -->
   <div class="sidebar-logout flex items-center justify-center pb-8">
     <button
       (click)="logout()"
-      class="sidebar-link w-12 h-12 flex items-center justify-center rounded-xl"
+      class="logout-btn"
       [disabled]="isLoggingOut">
-      <ng-container *ngIf="!isLoggingOut; else loading">
-        <i class="fas fa-sign-out-alt"></i>
-        <span class="sidebar-label">Déconnexion</span>
-      </ng-container>
-      <ng-template #loading>
-        <span class="loader"></span>
-        <span class="sidebar-label">Déconnexion...</span>
-      </ng-template>
+      
+      <!-- Animation de chargement -->
+      <div *ngIf="isLoggingOut" class="logout-loading">
+        <div class="logout-spinner"></div>
+      </div>
+      
+      <!-- État normal -->
+      <div *ngIf="!isLoggingOut" class="logout-content">
+        <i class="fas fa-sign-out-alt logout-icon"></i>
+        <span class="logout-text" [class.show]="isExpanded">Déconnexion</span>
+      </div>
     </button>
   </div>
 </div>
 
-<div class="ml-16 sidebar-content transition-all duration-300">
+<!-- Contenu principal qui s'adapte à la sidebar -->
+<div class="sidebar-content transition-all duration-300" 
+     [class.ml-16]="!isExpanded" 
+     [class.ml-64]="isExpanded">
   <router-outlet></router-outlet>
 </div>

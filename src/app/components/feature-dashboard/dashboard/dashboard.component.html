@@ -19,6 +19,26 @@
           </div>
         </div>
       </div>
+      
+      <!-- ✅ NOUVEAU: Statut Premium -->
+      <div class="premium-status" [ngClass]="getPremiumBadgeClass()">
+        <div *ngIf="isPremium()" class="premium-badge premium-active">
+          <i class="fas fa-crown"></i>
+          <div class="premium-info">
+            <span class="premium-label">Premium</span>
+            <span class="premium-expiry">Expire le {{ getSubscriptionInfo()?.formattedExpiry }}</span>
+          </div>
+        </div>
+        
+        <div *ngIf="!isPremium()" class="premium-badge premium-none">
+          <i class="fas fa-star"></i>
+          <div class="premium-info">
+            <span class="premium-label">Free</span>
+            <span class="premium-upgrade">Passez au Premium</span>
+          </div>
+        </div>
+      </div>
+
       <div class="user-details">
         <p><strong>Total DKP :</strong> {{ user.total_dkp }}</p>
         <label for="classe-select"><strong>Classe :</strong></label>
@@ -41,12 +61,12 @@
         <h4>Statistiques</h4>
         <ul>
           <li>Événements rejoints : <strong>{{ player.events_joined || 0 }}</strong></li>
-          <!-- Ajoute d'autres stats ici -->
         </ul>
       </div>
     </section>
   </div>
 </div>
+
 <!-- Template de fallback pendant le chargement -->
 <ng-template #loading>
   <p class="text-gray-500">Chargement des informations...</p>
