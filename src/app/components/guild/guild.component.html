@@ -1,0 +1,163 @@
+<div class="guild-page" *ngIf="!isLoading; else loading">
+  
+  <!-- Header -->
+  <div class="guild-header">
+    <div class="flex items-center justify-between">
+      <h1 class="page-title">
+        <i class="fas fa-shield-alt mr-3"></i>
+        Ma Guilde
+      </h1>
+      <button class="back-btn" (click)="goToDashboard()">
+        <i class="fas fa-arrow-left mr-2"></i>
+        Retour au Dashboard
+      </button>
+    </div>
+  </div>
+
+  <!-- ✅ Messages d'erreur et de succès -->
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <i class="fas fa-exclamation-triangle mr-2"></i>
+    {{ errorMessage }}
+    <button *ngIf="errorMessage.includes('Premium')" (click)="goToUpgrade()" class="upgrade-btn">
+      Passer au Premium
+    </button>
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success">
+    <i class="fas fa-check-circle mr-2"></i>
+    {{ successMessage }}
+  </div>
+
+  <!-- Si l'utilisateur n'a pas de guilde -->
+  <div *ngIf="!guild && !isCreatingGuild" class="no-guild">
+    <div class="no-guild-card">
+      <div class="no-guild-icon">
+        <i class="fas fa-shield-alt"></i>
+      </div>
+      <h2>Vous n'avez pas encore de guilde</h2>
+      <p>Créez votre propre guilde et invitez d'autres joueurs à vous rejoindre !</p>
+      
+      <!-- ✅ Affichage conditionnel selon le statut Premium -->
+      <div *ngIf="canCreateGuild(); else needPremium">
+        <button class="create-guild-btn" (click)="showCreateForm()">
+          <i class="fas fa-plus mr-2"></i>
+          Créer ma guilde
+        </button>
+      </div>
+      
+      <!-- ✅ Template si Premium requis -->
+      <ng-template #needPremium>
+        <div class="premium-required">
+          <p class="premium-message">
+            <i class="fas fa-crown mr-2"></i>
+            La création de guilde nécessite un abonnement Premium
+          </p>
+          <button class="upgrade-btn" (click)="goToUpgrade()">
+            <i class="fas fa-star mr-2"></i>
+            Passer au Premium
+          </button>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+  <!-- Formulaire de création de guilde -->
+  <div *ngIf="isCreatingGuild" class="create-guild-form">
+    <div class="form-card">
+      <h2>
+        <i class="fas fa-plus-circle mr-3"></i>
+        Créer une nouvelle guilde
+      </h2>
+      
+      <form (ngSubmit)="createGuild()" class="guild-form">
+        <div class="form-group">
+          <label for="guild-name">Nom de la guilde *</label>
+          <input 
+            type="text" 
+            id="guild-name"
+            [(ngModel)]="newGuild.name"
+            name="guildName"
+            placeholder="Entrez le nom de votre guilde"
+            maxlength="50"
+            [disabled]="isSubmitting"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label for="guild-description">Description</label>
+          <textarea 
+            id="guild-description"
+            [(ngModel)]="newGuild.description"
+            name="guildDescription"
+            placeholder="Décrivez votre guilde..."
+            rows="4"
+            [disabled]="isSubmitting"
+            maxlength="500"></textarea>
+        </div>
+
+        <div class="form-info">
+          <p>
+            <i class="fas fa-info-circle mr-2"></i>
+            Date de création : <strong>{{ currentDate }}</strong>
+          </p>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="cancel-btn" (click)="cancelCreate()" [disabled]="isSubmitting">
+            Annuler
+          </button>
+          <button type="submit" class="submit-btn" [disabled]="!newGuild.name.trim() || isSubmitting">
+            <i *ngIf="!isSubmitting" class="fas fa-check mr-2"></i>
+            <i *ngIf="isSubmitting" class="fas fa-spinner fa-spin mr-2"></i>
+            {{ isSubmitting ? 'Création...' : 'Créer la guilde' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Affichage de la guilde existante -->
+  <div *ngIf="guild && !isCreatingGuild" class="guild-info">
+    <div class="guild-card">
+      <div class="guild-header-info">
+        <div class="guild-icon">
+          <i class="fas fa-shield-alt"></i>
+        </div>
+        <div class="guild-details">
+          <h2>{{ guild.name }}</h2>
+          <p class="guild-description">{{ guild.description || 'Aucune description' }}</p>
+        </div>
+      </div>
+
+      <div class="guild-stats">
+        <div class="stat-item">
+          <i class="fas fa-users"></i>
+          <span>{{ guild.member_count || 1 }}/{{ guild.max_members || 50 }} membres</span>
+        </div>
+        <div class="stat-item">
+          <i class="fas fa-calendar-alt"></i>
+          <span>Créée le {{ guild.created_at | date:'dd/MM/yyyy' }}</span>
+        </div>
+      </div>
+
+      <div class="guild-actions">
+        <button class="action-btn">
+          <i class="fas fa-user-plus mr-2"></i>
+          Inviter des membres
+        </button>
+        <button class="action-btn">
+          <i class="fas fa-cog mr-2"></i>
+          Paramètres
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading template -->
+<ng-template #loading>
+  <div class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Chargement des informations de guilde...</p>
+  </div>
+</ng-template>

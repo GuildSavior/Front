@@ -106,4 +106,9 @@ export class DashboardComponent implements OnInit {
   getPremiumBadgeClass(): string {
     return this.planService.getPremiumBadgeClass(this.user);
   }
+
+  // ✅ Navigation vers la page guilde
+  goToGuild() {
+    this.router.navigate(['/guild']);
+  }
 }

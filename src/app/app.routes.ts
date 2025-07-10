@@ -6,6 +6,7 @@ import { DiscordAuthCallbackComponent } from './components/discord-auth-callback
 import { ErrorComponent } from './components/error/error.component';
 import { LogoutComponent } from './components/logout/logout.component';
 import { HomeComponent } from './components/home/home.component';
+import { GuildComponent } from './components/guild/guild.component'; // ✅ Nouveau composant
 import { AuthGuard } from './auth.guard';
 import { MainLayoutComponent } from './components/layouts/main-layout/main-layout.component';
 import { LandingLayoutComponent } from './components/layouts/landing-layout/landing-layout.component';
@@ -35,6 +36,7 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'profile', component: DashboardComponent },
+      { path: 'guild', component: GuildComponent }, // ✅ Nouvelle route
     ],
   },
 
