@@ -9,7 +9,6 @@ import { catchError, tap, throwError } from 'rxjs';
 export class DiscordAuthService {
   private backendUrl = 'http://127.0.0.1:8000/api/auth/discord';
 
-
   constructor(private http: HttpClient, private router: Router) {}
 
   loginWithDiscord() {
@@ -19,22 +18,10 @@ export class DiscordAuthService {
   logout() {
     console.log("Tentative de déconnexion...");
 
-    const token = localStorage.getItem('token');
-    if (!token) {
-      console.error("Aucun token trouvé !");
-      return;
-    }
-
-    const headers = {
-      Authorization: `Bearer ${token}`,
-    };
-
-    console.log("Envoi de la requête HTTP pour logout...");
-
-    return this.http.get('http://127.0.0.1:8000/api/logout', { headers }).pipe(
+    return this.http.get('http://127.0.0.1:8000/api/logout', { withCredentials: true }).pipe(
       tap(() => {
-        console.log("Déconnexion réussie, suppression du token...");
-        localStorage.clear();
+        console.log("Déconnexion réussie");
+        // Plus besoin de supprimer le localStorage, le cookie sera supprimé côté serveur
         this.router.navigate(['/login']);
       }),
       catchError((error) => {
@@ -43,6 +30,4 @@ export class DiscordAuthService {
       })
     ).subscribe();
   }
-
-
 }

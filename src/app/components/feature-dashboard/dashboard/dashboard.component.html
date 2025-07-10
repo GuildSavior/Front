@@ -51,3 +51,8 @@
 <ng-template #loading>
   <p class="text-gray-500">Chargement des informations...</p>
 </ng-template>
+
+<!-- Notification en bas à droite -->
+<div *ngIf="notification" class="dashboard-notification">
+  {{ notification }}
+</div>

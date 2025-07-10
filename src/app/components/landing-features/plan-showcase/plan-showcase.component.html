@@ -22,7 +22,14 @@
                 <span>Advanced guild management</span>
                 <span>Priority support</span>
             </div>
-            <button>Go Premium</button>
+            <button (click)="goPremium()" [disabled]="isLoading">
+                <ng-container *ngIf="!isLoading; else loading">
+                    Go Premium
+                </ng-container>
+                <ng-template #loading>
+                    <span class="loader"></span> Redirection...
+                </ng-template>
+            </button>
         </div>
     </div>
 </div>

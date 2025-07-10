@@ -8,9 +8,64 @@
       <li><a href="#" class="nav-link">Pricing</a></li>
       <li><a href="#" class="nav-link">FAQ</a></li>
     </ul>
-    <button (click)="discordLog()" class="nav-btn">
+    
+    <!-- Si pas connecté : bouton Sign In -->
+    <button *ngIf="!isAuthenticated" (click)="login()" class="nav-btn">
       Sign In
     </button>
+    
+    <!-- Si connecté : profil utilisateur -->
+    <div *ngIf="isAuthenticated" class="relative">
+      <button 
+        (click)="toggleDropdown()" 
+        class="flex items-center space-x-3 px-4 py-2 rounded-full border-2 border-[var(--main-purple-for-button-and-text)] hover:bg-[var(--purple-for-stroke)] hover:bg-opacity-30 transition-all duration-300 w-48">
+        
+        <!-- Avatar ou icône par défaut -->
+        <div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-[var(--main-purple-for-button-and-text)] bg-opacity-20 flex items-center justify-center">
+          <img 
+            *ngIf="user?.avatar && !avatarError" 
+            [src]="user.avatar" 
+            [alt]="user?.username || user?.name"
+            class="w-full h-full object-cover"
+            (error)="onAvatarError($event)">
+          <i *ngIf="!user?.avatar || avatarError" class="fas fa-user text-[var(--main-purple-for-button-and-text)] text-sm"></i>
+        </div>
+        
+        <!-- Nom utilisateur -->
+        <span class="text-[var(--main-purple-for-button-and-text)] font-medium text-sm flex-1 truncate">
+          {{ user?.username || user?.name }}
+        </span>
+        
+        <!-- Icône dropdown -->
+        <i class="fas fa-chevron-down text-[var(--main-purple-for-button-and-text)] text-xs transition-transform duration-200 flex-shrink-0" 
+           [class.rotate-180]="showDropdown"></i>
+      </button>
+      
+      <!-- Dropdown menu -->
+      <div *ngIf="showDropdown" class="absolute right-0 mt-2 w-48 bg-[#2c3e50] rounded-md shadow-lg z-50 border border-[var(--main-purple-for-button-and-text)] border-opacity-50">
+        <div class="py-1">
+          <button 
+            (click)="goToDashboard()" 
+            class="block w-full text-left px-4 py-2 text-sm text-white hover:bg-[var(--purple-for-stroke)] hover:bg-opacity-50 transition-colors">
+            <i class="fas fa-tachometer-alt mr-2 text-[var(--main-purple-for-button-and-text)]"></i>
+            Dashboard
+          </button>
+          <button 
+            (click)="goToProfile()" 
+            class="block w-full text-left px-4 py-2 text-sm text-white hover:bg-[var(--purple-for-stroke)] hover:bg-opacity-50 transition-colors">
+            <i class="fas fa-user mr-2 text-[var(--main-purple-for-button-and-text)]"></i>
+            Mon Profil
+          </button>
+          <hr class="border-[var(--main-purple-for-button-and-text)] border-opacity-50 my-1">
+          <button 
+            (click)="logout()" 
+            class="block w-full text-left px-4 py-2 text-sm text-white hover:bg-red-500 hover:bg-opacity-20 transition-colors">
+            <i class="fas fa-sign-out-alt mr-2 text-red-400"></i>
+            Se déconnecter
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </nav>
 
