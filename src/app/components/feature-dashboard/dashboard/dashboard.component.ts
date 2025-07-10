@@ -6,21 +6,37 @@ import { User } from '../../../models/user.model';
 import { Observable } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../services/auth.service';
+import { Player } from '../../../models/player.model';
+import { FormsModule } from '@angular/forms';
+import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.scss'
+  styleUrls: ['./dashboard.component.scss'],
+  animations: [
+    trigger('fadeSlide', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(-10px)' }),
+        animate('250ms cubic-bezier(0.4,0.2,0.2,1)', 
+          style({ opacity: 1, transform: 'translateY(0)' }))
+      ]),
+      transition(':leave', [
+        animate('200ms', style({ opacity: 0, transform: 'translateY(-10px)' }))
+      ])
+    ])
+  ]
 })
 export class DashboardComponent implements OnInit {
+export class DashboardComponent {
+  showSensitive = false;
   userService = inject(UsersService);
   discordAuthService = inject(DiscordAuthService);
   authService = inject(AuthService); 
   user: User = {
     id: 0,
-    name: '',
     email: '',
     discord_id: '',
     avatar: '',
@@ -28,6 +44,7 @@ export class DashboardComponent implements OnInit {
     total_dkp: 0,
     created_at: '',
     updated_at: '',
+    remember_token: null,
     username: null,
     refresh_token: null,
     guild_id: null,
@@ -35,6 +52,7 @@ export class DashboardComponent implements OnInit {
   };
   notification: string | null = null;
 
+  player: Player = { classe: 'support' };
   constructor(
     private route: ActivatedRoute,
     private router: Router,

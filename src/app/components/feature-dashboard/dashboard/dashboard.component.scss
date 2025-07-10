@@ -2,6 +2,7 @@ p{
     color: white;
 }
 
+
 .dashboard-notification {
   position: fixed;
   right: 2rem;
@@ -18,4 +19,128 @@ p{
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(30px);}
   to { opacity: 1; transform: translateY(0);}
+  
+.dashboard-container {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  margin: 2rem auto;
+  max-width: 900px;
+  flex-wrap: wrap;
+}
+
+.user-info, .user-actions {
+  background: #232347;
+  border-radius: 12px;
+  padding: 2rem;
+  min-width: 280px;
+  flex: 1 1 320px;
+  color: #fff;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+.avatar-block {
+  display: flex;
+  flex-direction: row; // <-- assure l'affichage côte à côte
+  align-items: flex-start; // <-- aligne le haut de l'avatar et du bloc infos
+  gap: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+.avatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  flex-shrink: 0; // <-- l'avatar ne rétrécit pas
+}
+
+.user-basic {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 110px; // Ajuste cette valeur selon la hauteur max des infos sensibles
+  justify-content: flex-start;
+  position: relative;
+}
+
+.user-basic h2 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.user-email, .user-id {
+  font-size: 0.95rem;
+  color: #bdbdbd;
+}
+
+.user-details {
+  margin-top: 1.2rem;
+}
+
+select {
+  margin-top: 0.5rem;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  border: none;
+  background: #2a2a5a;
+  color: #fff;
+}
+
+.user-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.dashboard-btn {
+  background: var(--main-purple-for-button-and-text);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.7rem 1.2rem;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.dashboard-btn:hover {
+  background: var(--main-purple-for-title);
+}
+
+.dashboard-stats ul {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0 0;
+}
+
+.dashboard-stats li {
+  margin-bottom: 0.5rem;
+}
+
+.show-sensitive-btn {
+  background: var(--main-purple-for-button-and-text);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.3rem 1rem;
+  margin: 0.7rem 0 0.5rem 0;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.2s;
+}
+.show-sensitive-btn:hover {
+  background: var(--main-purple-for-title);
+}
+
+.sensitive-info {
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 800px) {
+  .dashboard-container {
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 0 0.5rem;
+  }
 }

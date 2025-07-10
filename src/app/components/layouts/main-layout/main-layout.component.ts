@@ -61,5 +61,10 @@ export class MainLayoutComponent implements OnInit {
   // ✅ Navigation vers le profil
   goToProfile() {
     this.router.navigate(['/profile']);
-  }
+  discordAuth = inject(DiscordAuthService);
+  router = inject(Router);
+  auth = inject(AuthService)
+  private logoutSubscription: Subscription | null = null;
+
+  isLoggingOut = false; // Ajout du loader
 }

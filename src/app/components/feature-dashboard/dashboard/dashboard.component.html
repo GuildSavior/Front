@@ -1,17 +1,52 @@
 <!-- Si user est défini, on affiche les infos -->
 <div class="dashboard" *ngIf="user; else loading">
-  <h2 class="text-2xl font-bold mb-4">Informations Utilisateur</h2>
+  <div class="dashboard-container">
+    <!-- Colonne Infos Utilisateur -->
+    <section class="user-info">
+      <div class="avatar-block">
+        <img [src]="user.avatar" alt="Avatar" class="avatar" />
+        <div class="user-basic">
+          <h2>{{ user.username }}</h2>
+          <button class="show-sensitive-btn" (click)="showSensitive = !showSensitive">
+            {{ showSensitive ? 'Masquer' : 'Afficher les infos sensibles' }}
+          </button>
+          <div 
+            class="sensitive-info" 
+            *ngIf="showSensitive"
+            [@fadeSlide]>
+            <p class="user-email">{{ user.email }}</p>
+            <p class="user-id">ID Discord : {{ user.discord_id }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="user-details">
+        <p><strong>Total DKP :</strong> {{ user.total_dkp }}</p>
+        <label for="classe-select"><strong>Classe :</strong></label>
+        <select id="classe-select" [(ngModel)]="player.classe">
+          <option value="support">Support</option>
+          <option value="tank">Tank</option>
+          <option value="dps">DPS</option>
+          <option value="range">Range</option>
+          <option value="mage">Mage</option>
+        </select>
+      </div>
+    </section>
 
-  <p><strong>Nom :</strong> {{ user.name }}</p>
-  <p><strong>Email :</strong> {{ user.email }}</p>
-  <p><strong>ID Discord :</strong> {{ user.discord_id }}</p>
-  <p><strong>Avatar :</strong></p>
-  <img [src]="user.avatar" alt="Avatar" width="100" class="rounded shadow" />
+    <!-- Colonne Actions/Stats -->
+    <section class="user-actions">
+      <h3>Actions rapides</h3>
+      <button class="dashboard-btn">Voir ma guilde</button>
 
-  <p><strong>Statut :</strong> {{ user.statut }}</p>
-  <p><strong>Total DKP :</strong> {{ user.total_dkp }}</p>
+      <div class="dashboard-stats">
+        <h4>Statistiques</h4>
+        <ul>
+          <li>Événements rejoints : <strong>{{ player.events_joined || 0 }}</strong></li>
+          <!-- Ajoute d'autres stats ici -->
+        </ul>
+      </div>
+    </section>
+  </div>
 </div>
-
 <!-- Template de fallback pendant le chargement -->
 <ng-template #loading>
   <p class="text-gray-500">Chargement des informations...</p>
