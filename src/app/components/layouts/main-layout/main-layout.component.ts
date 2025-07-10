@@ -19,16 +19,22 @@ export class MainLayoutComponent {
   router = inject(Router);
   auth = inject(AuthService)
   private logoutSubscription: Subscription | null = null;
-  
 
-  logout(){
-    this.discordAuth.logout();
+  isLoggingOut = false; // Ajout du loader
+
+  logout() {
+    this.isLoggingOut = true;
+    setTimeout(() => {
+      this.isLoggingOut = false;
+      this.discordAuth.logout();
+      this.router.navigate(['/login']);
+    }, 2500); // 2,5 secondes de loader
   }
+
   showDashboard = false;
 
-ngOnInit() {
-  this.showDashboard = this.auth.isLoggedIn();
-  console.log('showDashboard:', this.showDashboard);
-}
-
+  ngOnInit() {
+    this.showDashboard = this.auth.isLoggedIn();
+    console.log('showDashboard:', this.showDashboard);
+  }
 }

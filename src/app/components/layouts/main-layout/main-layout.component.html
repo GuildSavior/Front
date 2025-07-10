@@ -1,44 +1,64 @@
-<div class="navbar h-screen w-64 fixed top-0 left-0 pt-5 z-10">
-  <ul class="list-none p-0 w-full">
-    <li class="w-full">
-      <a
-        routerLink="/home"
-        routerLinkActive="active"
-        class="flex items-center px-5 py-3 text-[#ecf0f1] text-base transition-colors duration-300 w-full hover:bg-[#41345e] hover:text-[#bc7b1a]">
-        <i class="fas fa-home mr-3"></i>
-        <span>Accueil</span>
-      </a>
-    </li>
-    <li *ngIf="showDashboard" class="w-full">
-      <a
-        routerLink="/dashboard"
-        routerLinkActive="active"
-        class="flex items-center px-5 py-3 text-[#ecf0f1] text-base transition-colors duration-300 w-full hover:bg-[#41345e] hover:text-[#bc7b1a]">
-        <i class="fas fa-home mr-3"></i>
-        <span>Dashboard</span>
-      </a>
-    </li>
-    <li *ngIf="showDashboard" class="w-full">
-      <a
-        routerLink="/profile"
-        routerLinkActive="active"
-        class="flex items-center px-5 py-3 text-[#ecf0f1] text-base transition-colors duration-300 w-full hover:bg-[#41345e] hover:text-[#bc7b1a]">
-        <i class="fas fa-user mr-3"></i>
-        <span>Profile</span>
-      </a>
-    </li>
-    <li class="w-full">
-      <a
-        (click)="logout()"
-        class="flex items-center px-5 py-3 text-[#ecf0f1] text-base transition-colors duration-300 w-full hover:bg-[#41345e] hover:text-[#bc7b1a]">
-        <i class="fas fa-sign-out-alt mr-3"></i>
-        <span>Logout</span>
-      </a>
-    </li>
-  </ul>
+<div class="navbar sidebar-collapsed fixed top-0 left-0 h-screen z-10 flex flex-col justify-between transition-all duration-300">
+  <div>
+    <div class="sidebar-logo flex items-center justify-center h-20">
+      <span class="text-2xl font-extrabold text-[#bc7b1a] tracking-wide select-none">G</span>
+    </div>
+    <ul class="list-none p-0 w-full">
+      <li>
+        <a
+          routerLink="/dashboard"
+          routerLinkActive="active"
+          class="sidebar-link">
+          <i class="fas fa-home"></i>
+          <span class="sidebar-label">Dashboard</span>
+        </a>
+      </li>
+      <li>
+        <a
+          routerLink="/members"
+          routerLinkActive="active"
+          class="sidebar-link">
+          <i class="fas fa-users"></i>
+          <span class="sidebar-label">Members</span>
+        </a>
+      </li>
+      <li>
+        <a
+          routerLink="/events"
+          routerLinkActive="active"
+          class="sidebar-link">
+          <i class="fas fa-calendar-alt"></i>
+          <span class="sidebar-label">Events</span>
+        </a>
+      </li>
+      <li>
+        <a
+          routerLink="/auction"
+          routerLinkActive="active"
+          class="sidebar-link">
+          <i class="fas fa-gavel"></i>
+          <span class="sidebar-label">Auction</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <div class="sidebar-logout flex items-center justify-center pb-8">
+    <button
+      (click)="logout()"
+      class="sidebar-link w-12 h-12 flex items-center justify-center rounded-xl"
+      [disabled]="isLoggingOut">
+      <ng-container *ngIf="!isLoggingOut; else loading">
+        <i class="fas fa-sign-out-alt"></i>
+        <span class="sidebar-label">Déconnexion</span>
+      </ng-container>
+      <ng-template #loading>
+        <span class="loader"></span>
+        <span class="sidebar-label">Déconnexion...</span>
+      </ng-template>
+    </button>
+  </div>
 </div>
 
-<!-- CONTENU PRINCIPAL À DROITE -->
-<div class="ml-64 h-screen overflow-auto p-6 text-[#ecf0f1]">
+<div class="ml-16 sidebar-content transition-all duration-300">
   <router-outlet></router-outlet>
 </div>
