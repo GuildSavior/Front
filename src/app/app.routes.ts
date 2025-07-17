@@ -6,10 +6,12 @@ import { DiscordAuthCallbackComponent } from './components/discord-auth-callback
 import { ErrorComponent } from './components/error/error.component';
 import { LogoutComponent } from './components/logout/logout.component';
 import { HomeComponent } from './components/home/home.component';
+import { GuildComponent } from './components/guild/guild.component'; // ✅ Nouveau composant
 import { AuthGuard } from './auth.guard';
 import { MainLayoutComponent } from './components/layouts/main-layout/main-layout.component';
 import { LandingLayoutComponent } from './components/layouts/landing-layout/landing-layout.component';
 import { LandingPageComponent } from './components/landing-features/landing/landing-page.component';
+import { MembersComponent } from './components/feature-dashboard/options/members/members.component';
 
 export const routes: Routes = [
   // Routes sans layout
@@ -35,6 +37,8 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'profile', component: DashboardComponent },
+      { path: 'guild', component: GuildComponent },
+      { path: 'members', component: MembersComponent }, // ✅ Nouvelle route
     ],
   },
 

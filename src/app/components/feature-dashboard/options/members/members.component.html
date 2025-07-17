@@ -1,1 +1,156 @@
-<p>members works!</p>
+<div class="members-page">
+  <div class="members-header">
+    <h2>👥 Membres de la guilde</h2>
+    <div class="guild-info" *ngIf="guild">
+      <span class="guild-name">{{ guild.name }}</span>
+      <span class="members-count">{{ guild.member_count }} membre(s)</span>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading-section">
+    <div class="loading-spinner"></div>
+    <p>Chargement des membres...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="errorMessage && !isLoading" class="error-section">
+    <div class="error-card">
+      <i class="fas fa-exclamation-triangle"></i>
+      <h3>Erreur</h3>
+      <p>{{ errorMessage }}</p>
+      <button class="retry-btn" (click)="loadGuildMembers()">
+        <i class="fas fa-refresh"></i>
+        Réessayer
+      </button>
+    </div>
+  </div>
+
+  <!-- Members Table -->
+  <div *ngIf="!isLoading && !errorMessage" class="members-section">
+    
+    <!-- Sorting Options -->
+    <div class="sorting-options">
+      <h4>🔄 Trier par :</h4>
+      <div class="sort-buttons">
+        <button class="sort-btn" (click)="sortMembersByDKP()">
+          <i class="fas fa-coins"></i>
+          DKP
+        </button>
+        <button class="sort-btn" (click)="sortMembersByLevel()">
+          <i class="fas fa-level-up-alt"></i>
+          Niveau
+        </button>
+        <button class="sort-btn" (click)="sortMembersByName()">
+          <i class="fas fa-sort-alpha-down"></i>
+          Nom
+        </button>
+      </div>
+    </div>
+
+    <!-- Members Table -->
+    <div class="members-table-container">
+      <table class="members-table">
+        <thead>
+          <tr>
+            <th>Avatar</th>
+            <th>Utilisateur</th>
+            <th>Rôle</th>
+            <th>Personnage</th>
+            <th>Niveau</th>
+            <th>Classe</th>
+            <th>DKP</th>
+            <th>Événements</th>
+            <th>Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let member of members" 
+              [class.owner-row]="member.is_owner"
+              [class.no-profile-row]="!member.player">
+            
+            <!-- Avatar -->
+            <td class="avatar-cell">
+              <img [src]="member.avatar" [alt]="member.username" class="member-avatar">
+            </td>
+            
+            <!-- Username -->
+            <td class="username-cell">
+              <div class="username-info">
+                <span class="username">{{ member.username }}</span>
+                <small class="discord-id">#{{ member.discord_id }}</small>
+              </div>
+            </td>
+            
+            <!-- Rôle -->
+            <td class="role-cell">
+              <span class="role-badge" [class]="getMemberRoleBadge(member)">
+                <i class="fas" [class]="member.is_owner ? 'fa-crown' : 'fa-user'"></i>
+                {{ getMemberRoleText(member) }}
+              </span>
+            </td>
+            
+            <!-- Nom personnage -->
+            <td class="character-cell">
+              <span *ngIf="member.player" class="character-name">
+                {{ member.player.name }}
+              </span>
+              <span *ngIf="!member.player" class="no-character">
+                -
+              </span>
+            </td>
+            
+            <!-- Niveau -->
+            <td class="level-cell">
+              <span *ngIf="member.player" class="level-value">
+                {{ member.player.level }}
+              </span>
+              <span *ngIf="!member.player" class="no-data">-</span>
+            </td>
+            
+            <!-- Classe -->
+            <td class="class-cell">
+              <span *ngIf="member.player" class="class-badge">
+                {{ member.player.class }}
+              </span>
+              <span *ngIf="!member.player" class="no-data">-</span>
+            </td>
+            
+            <!-- DKP -->
+            <td class="dkp-cell">
+              <span *ngIf="member.player" class="dkp-value">
+                {{ member.player.dkp || 0 }}
+              </span>
+              <span *ngIf="!member.player" class="no-data">-</span>
+            </td>
+            
+            <!-- Événements -->
+            <td class="events-cell">
+              <span *ngIf="member.player" class="events-value">
+                {{ member.player.events_joined || 0 }}
+              </span>
+              <span *ngIf="!member.player" class="no-data">-</span>
+            </td>
+            
+            <!-- Statut -->
+            <td class="status-cell">
+              <span class="status-badge" [class]="getPlayerStatusBadge(member)">
+                <i class="fas" [class]="member.player ? 'fa-check-circle' : 'fa-times-circle'"></i>
+                {{ getPlayerStatusText(member) }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <!-- Empty State -->
+      <div *ngIf="members.length === 0" class="empty-members">
+        <div class="empty-icon">
+          <i class="fas fa-users-slash"></i>
+        </div>
+        <h3>Aucun membre trouvé</h3>
+        <p>Il n'y a aucun membre dans cette guilde.</p>
+      </div>
+    </div>
+  </div>
+</div>

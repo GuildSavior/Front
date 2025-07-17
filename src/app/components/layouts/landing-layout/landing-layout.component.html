@@ -9,11 +9,15 @@
       <li><a href="#" class="nav-link">FAQ</a></li>
     </ul>
     
-    <!-- Si pas connecté : bouton Sign In -->
-    <button *ngIf="!isAuthenticated" (click)="login()" class="nav-btn">
-      Sign In
-    </button>
-    
+    <!-- Si pas connecté : UN SEUL bouton Sign In -->
+    <div *ngIf="!isAuthenticated">
+      <button 
+        (click)="login()" 
+        class="nav-btn bg-transparent border border-[var(--main-purple-for-button-and-text)] hover:bg-[var(--main-purple-for-button-and-text)] transition-colors px-4 py-2 rounded">
+        Sign In
+      </button>
+    </div>
+
     <!-- Si connecté : profil utilisateur -->
     <div *ngIf="isAuthenticated" class="relative">
       <button 
