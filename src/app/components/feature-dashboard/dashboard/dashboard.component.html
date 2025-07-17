@@ -20,7 +20,7 @@
         </div>
       </div>
       
-      <!-- ✅ NOUVEAU: Statut Premium -->
+      <!-- Statut Premium -->
       <div class="premium-status" [ngClass]="getPremiumBadgeClass()">
         <div *ngIf="isPremium()" class="premium-badge premium-active">
           <i class="fas fa-crown"></i>
@@ -39,16 +39,117 @@
         </div>
       </div>
 
-      <div class="user-details">
-        <p><strong>Total DKP :</strong> {{ user.total_dkp }}</p>
-        <label for="classe-select"><strong>Classe :</strong></label>
-        <select id="classe-select" [(ngModel)]="player.classe">
-          <option value="support">Support</option>
-          <option value="tank">Tank</option>
-          <option value="dps">DPS</option>
-          <option value="range">Range</option>
-          <option value="mage">Mage</option>
-        </select>
+      <!-- ✅ SECTION FUSIONNÉE: Profil de personnage -->
+      <div class="player-profile-section">
+        <div class="profile-header">
+          <h4>🗡️ Mon Personnage & Statistiques</h4>
+        </div>
+        
+        <!-- ✅ BOUTONS SUR UNE LIGNE SÉPARÉE -->
+        <div class="profile-actions" *ngIf="hasPlayerProfile && !isEditingPlayer">
+          <button class="edit-btn" (click)="startEditPlayer()">
+            <i class="fas fa-edit"></i>
+            Modifier
+          </button>
+          <button class="delete-btn" (click)="deletePlayerProfile()">
+            <i class="fas fa-trash"></i>
+            Supprimer
+          </button>
+        </div>
+
+        <!-- Affichage du profil existant -->
+        <div class="player-display" *ngIf="hasPlayerProfile && !isEditingPlayer">
+          <div class="player-info">
+            <div class="info-row">
+              <span class="label">Nom :</span>
+              <span class="value">{{ currentPlayer.name }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Niveau :</span>
+              <span class="value">{{ currentPlayer.level }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Classe/Rôle :</span>
+              <span class="value class-badge role-class">{{ currentPlayer.class }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">DKP :</span>
+              <span class="value dkp-value">{{ currentPlayer.dkp || 0 }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Événements :</span>
+              <span class="value">{{ currentPlayer.events_joined || 0 }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formulaire de création/modification -->
+        <div class="player-form" *ngIf="!hasPlayerProfile || isEditingPlayer">
+          <div class="form-group">
+            <label for="player-name">Nom du personnage *</label>
+            <input 
+              id="player-name"
+              type="text" 
+              [(ngModel)]="playerForm.name"
+              placeholder="Ex: Legolas"
+              maxlength="50"
+              class="form-input">
+          </div>
+
+          <div class="form-group">
+            <label for="player-level">Niveau *</label>
+            <input 
+              id="player-level"
+              type="number" 
+              [(ngModel)]="playerForm.level"
+              min="1" 
+              max="100"
+              class="form-input">
+          </div>
+
+          <!-- ✅ MODIFIÉ: Select pour le rôle qui devient la classe -->
+          <div class="form-group">
+            <label for="player-class">Rôle/Classe *</label>
+            <select 
+              id="player-class"
+              [(ngModel)]="playerForm.class"
+              class="form-select">
+              <option value="tank">🛡️ Tank</option>
+              <option value="dps">⚔️ DPS</option>
+              <option value="support">🩹 Support</option>
+              <option value="range">🏹 Range</option>
+              <option value="mage">🔮 Mage</option>
+            </select>
+          </div>
+
+          <div class="form-actions">
+            <button 
+              class="save-btn"
+              (click)="savePlayerProfile()"
+              [disabled]="isSubmittingPlayer || !playerForm.name.trim()">
+              <i *ngIf="!isSubmittingPlayer" class="fas fa-save"></i>
+              <i *ngIf="isSubmittingPlayer" class="fas fa-spinner fa-spin"></i>
+              {{ isSubmittingPlayer ? 'Sauvegarde...' : (hasPlayerProfile ? 'Mettre à jour' : 'Créer profil') }}
+            </button>
+            
+            <button 
+              *ngIf="isEditingPlayer"
+              class="cancel-btn"
+              (click)="cancelEditPlayer()">
+              <i class="fas fa-times"></i>
+              Annuler
+            </button>
+          </div>
+        </div>
+
+        <!-- Message d'aide -->
+        <div class="help-text" *ngIf="!hasPlayerProfile && !isEditingPlayer">
+          <p><i class="fas fa-info-circle"></i> Créez votre profil de personnage WoW pour suivre vos DKP et événements.</p>
+          <button class="create-profile-btn" (click)="isEditingPlayer = true">
+            <i class="fas fa-plus"></i>
+            Créer mon profil
+          </button>
+        </div>
       </div>
     </section>
 
@@ -57,12 +158,6 @@
       <h3>Actions rapides</h3>
       <button class="dashboard-btn" (click)="goToGuild()">Voir ma guilde</button>
 
-      <div class="dashboard-stats">
-        <h4>Statistiques</h4>
-        <ul>
-          <li>Événements rejoints : <strong>{{ player.events_joined || 0 }}</strong></li>
-        </ul>
-      </div>
     </section>
   </div>
 </div>

@@ -11,6 +11,7 @@ import { AuthGuard } from './auth.guard';
 import { MainLayoutComponent } from './components/layouts/main-layout/main-layout.component';
 import { LandingLayoutComponent } from './components/layouts/landing-layout/landing-layout.component';
 import { LandingPageComponent } from './components/landing-features/landing/landing-page.component';
+import { MembersComponent } from './components/feature-dashboard/options/members/members.component';
 
 export const routes: Routes = [
   // Routes sans layout
@@ -36,7 +37,8 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'profile', component: DashboardComponent },
-      { path: 'guild', component: GuildComponent }, // ✅ Nouvelle route
+      { path: 'guild', component: GuildComponent },
+      { path: 'members', component: MembersComponent }, // ✅ Nouvelle route
     ],
   },
 

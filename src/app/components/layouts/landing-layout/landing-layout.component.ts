@@ -43,18 +43,13 @@ export class LandingLayoutComponent implements OnInit {
     });
   }
 
-  // ✅ Construire l'URL de l'avatar Discord (très simple)
-  getAvatarUrl(): string {
-    return this.user?.avatar || '';
-  }
-
   // ✅ Gérer l'erreur de chargement d'avatar
   onAvatarError(event: any) {
     console.log('❌ Erreur chargement avatar:', event);
     this.avatarError = true;
   }
 
-  // ✅ Login Discord
+  // ✅ Login Discord (UN SEUL BOUTON)
   login(): void {
     this.discordAuth.loginWithDiscord();
   }

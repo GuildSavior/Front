@@ -4,9 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { GuildService } from '../../services/guild/guild.service'; // ✅ Nouveau service
-import { PlanService } from '../../services/plan/plan.service';
+import { PlanService } from '../../services/plan/plan.service'; // ✅ AJOUTER
 import { User } from '../../models/user.model';
 import { Guild } from '../../models/guild.model';
+import { GuildInvitationService } from '../../services/invitations/guild-invitation.service';
 
 @Component({
   selector: 'app-guild',
@@ -19,6 +20,7 @@ export class GuildComponent implements OnInit {
   private authService = inject(AuthService);
   private guildService = inject(GuildService); // ✅ Service guild
   private planService = inject(PlanService); // ✅ Service plan
+  private invitationService = inject(GuildInvitationService); // ✅ AJOUTER
   private router = inject(Router);
 
   user: User | null = null;
@@ -38,6 +40,21 @@ export class GuildComponent implements OnInit {
     description: ''
   };
 
+  // ✅ NOUVELLES propriétés pour les invitations
+  invitations: any[] = [];
+  isLoadingInvitations = false;
+  showInvitations = false;
+  isCreatingInvitation = false;
+  invitationForm = {
+    maxUses: null as number | null,
+    expiresInHours: null as number | null
+  };
+
+  // ✅ Propriété pour savoir si l'utilisateur est owner
+  get isGuildOwner(): boolean {
+    return !!(this.user && this.guild && this.guild.owner_id === this.user.id);
+  }
+
   ngOnInit() {
     this.loadUserAndGuild();
   }
@@ -47,8 +64,27 @@ export class GuildComponent implements OnInit {
       next: (user) => {
         if (user) {
           this.user = user;
-          this.guild = user.guild; // Si l'utilisateur a déjà une guilde
-          this.isLoading = false;
+          
+          // ✅ Récupérer la guilde actuelle de l'utilisateur
+          this.guildService.getCurrentGuild().subscribe({
+            next: (response) => {
+              if (response.success) {
+                this.guild = response.guild;
+                console.log('✅ Guilde actuelle chargée:', this.guild);
+              } else {
+                console.log('ℹ️ Utilisateur sans guilde');
+              }
+              this.isLoading = false;
+            },
+            error: (error) => {
+              if (error.status === 404) {
+                console.log('ℹ️ Utilisateur sans guilde (404)');
+              } else {
+                console.error('❌ Erreur récupération guilde:', error);
+              }
+              this.isLoading = false;
+            }
+          });
         } else {
           this.router.navigate(['/home']);
         }
@@ -98,54 +134,54 @@ export class GuildComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    // ✅ Préparer les données pour l'API
+    // ✅ Préparer les données selon ton controller backend
     const guildData = {
       name: this.newGuild.name.trim(),
-      description: this.newGuild.description.trim()
+      description: this.newGuild.description.trim(),
+      region: '' // Optionnel selon ton backend
     };
 
-    // ✅ Appel API pour créer la guilde
+    console.log('🏰 Creating guild with data:', guildData);
+
     this.guildService.createGuild(guildData).subscribe({
       next: (response) => {
         console.log('✅ Guilde créée avec succès:', response);
         
-        // ✅ Succès - mettre à jour l'interface
-        this.guild = response.guild; // Supposons que l'API retourne la guilde créée
-        this.isCreatingGuild = false;
-        this.isSubmitting = false;
-        this.newGuild = { name: '', description: '' };
-        this.successMessage = '🎉 Votre guilde a été créée avec succès !';
-        
-        // ✅ Effacer le message de succès après 5 secondes
-        setTimeout(() => {
-          this.successMessage = '';
-        }, 5000);
+        // ✅ Ton backend retourne { success: true, guild: {...} }
+        if (response.success) {
+          this.guild = response.guild;
+          this.isCreatingGuild = false;
+          this.isSubmitting = false;
+          this.newGuild = { name: '', description: '' };
+          this.successMessage = '🎉 Votre guilde a été créée avec succès !';
+          
+          setTimeout(() => {
+            this.successMessage = '';
+          }, 5000);
+        } else {
+          this.errorMessage = response.message || 'Erreur lors de la création';
+          this.isSubmitting = false;
+        }
       },
       error: (error) => {
         console.error('❌ Erreur lors de la création:', error);
         this.isSubmitting = false;
         
-        // ✅ Gestion spécifique des erreurs Premium
+        // ✅ Gestion des erreurs selon ton backend
         if (error.status === 403) {
-          if (error.error.premium_required) {
-            this.errorMessage = '🔒 Abonnement Premium requis pour créer une guilde';
-            // Rediriger vers la page d'upgrade après 3 secondes
-            setTimeout(() => {
-              this.router.navigate(['/upgrade']);
-            }, 3000);
-          } else if (error.error.premium_expired) {
-            this.errorMessage = '⏰ Votre abonnement Premium a expiré';
-            setTimeout(() => {
-              this.router.navigate(['/upgrade']);
-            }, 3000);
-          } else {
-            this.errorMessage = '❌ Accès refusé pour cette action';
-          }
+          this.errorMessage = error.error.message || '🔒 Abonnement Premium requis pour créer une guilde';
+          setTimeout(() => {
+            this.router.navigate(['/upgrade']);
+          }, 3000);
         } else if (error.status === 401) {
           this.errorMessage = '🔐 Veuillez vous reconnecter';
           this.router.navigate(['/home']);
+        } else if (error.status === 422) {
+          // Erreurs de validation
+          const validationErrors = error.error.errors || {};
+          this.errorMessage = Object.values(validationErrors).flat().join(', ');
         } else {
-          this.errorMessage = '❌ Erreur lors de la création de la guilde. Veuillez réessayer.';
+          this.errorMessage = error.error.message || '❌ Erreur lors de la création de la guilde. Veuillez réessayer.';
         }
       }
     });
@@ -164,5 +200,93 @@ export class GuildComponent implements OnInit {
   // ✅ Aller à la page upgrade
   goToUpgrade() {
     this.router.navigate(['/upgrade']);
+  }
+
+  // ✅ NOUVELLES méthodes pour les invitations
+
+  loadInvitations() {
+    if (!this.isGuildOwner) return;
+
+    this.isLoadingInvitations = true;
+    this.invitationService.getMyInvitations().subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.invitations = response.invitations;
+          console.log('✅ Invitations chargées:', this.invitations);
+        }
+        this.isLoadingInvitations = false;
+      },
+      error: (error) => {
+        console.error('❌ Erreur chargement invitations:', error);
+        this.isLoadingInvitations = false;
+      }
+    });
+  }
+
+  toggleInvitations() {
+    this.showInvitations = !this.showInvitations;
+    if (this.showInvitations && this.invitations.length === 0) {
+      this.loadInvitations();
+    }
+  }
+
+  createInvitation() {
+    this.isCreatingInvitation = true;
+    this.errorMessage = '';
+
+    this.invitationService.createInvitation(
+      this.invitationForm.maxUses || undefined,
+      this.invitationForm.expiresInHours || undefined
+    ).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.successMessage = '🔗 Invitation créée avec succès !';
+          this.loadInvitations(); // Recharger la liste
+          this.resetInvitationForm();
+        }
+        this.isCreatingInvitation = false;
+      },
+      error: (error) => {
+        console.error('❌ Erreur création invitation:', error);
+        this.errorMessage = error.error.message || 'Erreur lors de la création de l\'invitation';
+        this.isCreatingInvitation = false;
+      }
+    });
+  }
+
+  copyToClipboard(url: string) {
+    navigator.clipboard.writeText(url).then(() => {
+      this.successMessage = '📋 URL copiée dans le presse-papiers !';
+      setTimeout(() => this.successMessage = '', 3000);
+    }).catch(() => {
+      this.errorMessage = '❌ Impossible de copier l\'URL';
+      setTimeout(() => this.errorMessage = '', 3000);
+    });
+  }
+
+  deactivateInvitation(invitationId: number) {
+    if (!confirm('Êtes-vous sûr de vouloir désactiver cette invitation ?')) {
+      return;
+    }
+
+    this.invitationService.deactivateInvitation(invitationId).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.successMessage = '✅ Invitation désactivée';
+          this.loadInvitations(); // Recharger la liste
+        }
+      },
+      error: (error) => {
+        console.error('❌ Erreur désactivation invitation:', error);
+        this.errorMessage = 'Erreur lors de la désactivation';
+      }
+    });
+  }
+
+  private resetInvitationForm() {
+    this.invitationForm = {
+      maxUses: null,
+      expiresInHours: null
+    };
   }
 }

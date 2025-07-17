@@ -151,6 +151,145 @@
         </button>
       </div>
     </div>
+
+    <!-- ✅ AJOUTER cette section dans ton template existant, après les infos de guilde -->
+
+    <!-- Section Invitations (seulement pour le propriétaire) -->
+    <div class="guild-invitations" *ngIf="guild && isGuildOwner">
+      <div class="guild-card mt-4">
+        <div class="guild-header-info">
+          <div class="guild-icon">
+            <i class="fas fa-link"></i>
+          </div>
+          <div class="guild-details">
+            <h2>🔗 Invitations de guilde</h2>
+            <button 
+              (click)="toggleInvitations()" 
+              class="action-btn">
+              {{ showInvitations ? 'Masquer' : 'Afficher' }} les invitations
+            </button>
+          </div>
+        </div>
+        
+        <div class="guild-content" *ngIf="showInvitations">
+          
+          <!-- Formulaire création invitation -->
+          <div class="create-invitation-section">
+            <h3>📝 Créer une nouvelle invitation</h3>
+            <div class="invitation-form">
+              <div class="form-group">
+                <label>Nombre max d'utilisations</label>
+                <input 
+                  type="number" 
+                  [(ngModel)]="invitationForm.maxUses"
+                  placeholder="Illimité"
+                  min="1" 
+                  max="100">
+              </div>
+              <div class="form-group">
+                <label>Expire dans (heures)</label>
+                <input 
+                  type="number" 
+                  [(ngModel)]="invitationForm.expiresInHours"
+                  placeholder="Jamais"
+                  min="1" 
+                  max="168">
+              </div>
+              <div class="form-group">
+                <button 
+                  (click)="createInvitation()" 
+                  class="submit-btn"
+                  [disabled]="isCreatingInvitation">
+                  <i *ngIf="isCreatingInvitation" class="fas fa-spinner fa-spin mr-2"></i>
+                  <i *ngIf="!isCreatingInvitation" class="fas fa-plus mr-2"></i>
+                  {{ isCreatingInvitation ? 'Création...' : 'Créer invitation' }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Loading invitations -->
+          <div *ngIf="isLoadingInvitations" class="loading-section">
+            <div class="loading-spinner"></div>
+            <p>Chargement des invitations...</p>
+          </div>
+
+          <!-- Liste des invitations -->
+          <div class="invitations-list" *ngIf="!isLoadingInvitations">
+            <h3 *ngIf="invitations.length > 0">📋 Mes invitations ({{ invitations.length }})</h3>
+            
+            <div class="no-invitations" *ngIf="invitations.length === 0">
+              <div class="no-guild-icon">
+                <i class="fas fa-envelope"></i>
+              </div>
+              <p>Aucune invitation créée pour le moment.</p>
+            </div>
+
+            <div class="invitation-item" *ngFor="let invitation of invitations">
+              <div class="invitation-card">
+                
+                <!-- Info invitation -->
+                <div class="invitation-info">
+                  <div class="invitation-code">
+                    <strong>Code:</strong> 
+                    <code>{{ invitation.code }}</code>
+                  </div>
+                  <div class="invitation-url">
+                    <label>URL d'invitation:</label>
+                    <div class="url-input-group">
+                      <input 
+                        readonly 
+                        [value]="invitation.url" 
+                        class="url-input">
+                      <button 
+                        (click)="copyToClipboard(invitation.url)" 
+                        class="copy-btn">
+                        📋 Copier
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Stats invitation -->
+                <div class="invitation-stats">
+                  <div class="stat-item" *ngIf="invitation.max_uses">
+                    <i class="fas fa-users"></i>
+                    <span>{{ invitation.uses_count }}/{{ invitation.max_uses }} utilisations</span>
+                  </div>
+                  <div class="stat-item" *ngIf="invitation.expires_at">
+                    <i class="fas fa-clock"></i>
+                    <span>Expire: {{ invitation.expires_at | date:'dd/MM/yyyy HH:mm' }}</span>
+                  </div>
+                  <div class="stat-item">
+                    <span 
+                      class="status-badge"
+                      [class.valid]="invitation.is_valid"
+                      [class.invalid]="!invitation.is_valid">
+                      {{ invitation.is_valid ? '✅ Valide' : '❌ Invalide' }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="invitation-actions">
+                  <button 
+                    *ngIf="invitation.is_active"
+                    (click)="deactivateInvitation(invitation.id)" 
+                    class="action-btn danger">
+                    <i class="fas fa-trash mr-2"></i>
+                    Désactiver
+                  </button>
+                  <span *ngIf="!invitation.is_active" class="disabled-text">
+                    Désactivée
+                  </span>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 

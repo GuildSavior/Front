@@ -12,32 +12,70 @@ export class GuildService {
 
   constructor() { }
 
-  // ✅ Créer une guilde (nécessite Premium)
-  createGuild(guildData: Partial<Guild>): Observable<any> {
-    const token = this.getAuthToken();
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    });
-
-    return this.http.post(`${this.apiUrl}/guilds`, guildData, { headers });
-  }
-
-  // ✅ Récupérer la guilde de l'utilisateur
-  getUserGuild(): Observable<any> {
-    const token = this.getAuthToken();
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
-
-    return this.http.get(`${this.apiUrl}/user/guild`, { headers });
+  // ✅ Même méthode de récupération du token que ton AuthService
+  private getCookie(name: string): string | null {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) {
+      return parts.pop()?.split(';').shift() || null;
+    }
+    return null;
   }
 
   // ✅ Helper pour récupérer le token
   private getAuthToken(): string {
-    return document.cookie
-      .split('; ')
-      .find(row => row.startsWith('auth_token='))
-      ?.split('=')[1] || '';
+    return this.getCookie('auth_token') || '';
+  }
+
+  // ✅ Headers avec le token
+  private getAuthHeaders(): HttpHeaders {
+    const token = this.getAuthToken();
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+  }
+
+  // ✅ Créer une guilde (correspond à ta route POST /guilds/)
+  createGuild(guildData: Partial<Guild>): Observable<any> {
+    console.log('🏰 GuildService - Creating guild:', guildData);
+    return this.http.post(`${this.apiUrl}/guilds`, guildData, { 
+      headers: this.getAuthHeaders() 
+    });
+  }
+
+  // ✅ Récupérer ma guilde actuelle (correspond à ta route GET /guilds/current)
+  getCurrentGuild(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/guilds/current`, { 
+      headers: this.getAuthHeaders() 
+    });
+  }
+
+  // ✅ Lister toutes les guildes (correspond à ta route GET /guilds/)
+  getAllGuilds(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/guilds`, { 
+      headers: this.getAuthHeaders() 
+    });
+  }
+
+  // ✅ Rejoindre une guilde (correspond à ta route POST /guilds/{guild}/join)
+  joinGuild(guildId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/guilds/${guildId}/join`, {}, { 
+      headers: this.getAuthHeaders() 
+    });
+  }
+
+  // ✅ Quitter ma guilde (correspond à ta route POST /guilds/leave)
+  leaveGuild(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/guilds/leave`, {}, { 
+      headers: this.getAuthHeaders() 
+    });
+  }
+
+  // Récupérer les membres de ma guilde avec leurs profils joueur
+  getGuildMembers(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/guilds/members`, { 
+      headers: this.getAuthHeaders() 
+    });
   }
 }

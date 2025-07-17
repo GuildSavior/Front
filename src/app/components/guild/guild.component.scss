@@ -335,6 +335,224 @@
   }
 }
 
+/* ✅ AJOUTER ces styles pour les invitations */
+
+.guild-invitations {
+  margin-top: 2rem;
+}
+
+.create-invitation-section {
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  
+  h3 {
+    color: var(--main-purple-for-button-and-text);
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+  }
+}
+
+.invitation-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 1rem;
+  align-items: end;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.invitation-item {
+  margin-bottom: 1rem;
+}
+
+.invitation-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--main-purple-for-button-and-text);
+  }
+}
+
+.invitation-info {
+  margin-bottom: 1rem;
+  
+  .invitation-code {
+    margin-bottom: 0.5rem;
+    color: #fff;
+    
+    code {
+      background: var(--main-purple-for-button-and-text);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      margin-left: 8px;
+    }
+  }
+  
+  .invitation-url {
+    label {
+      display: block;
+      color: #ccc;
+      margin-bottom: 4px;
+      font-size: 0.9rem;
+    }
+  }
+}
+
+.url-input-group {
+  display: flex;
+  gap: 0.5rem;
+  
+  .url-input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    
+    &:focus {
+      outline: none;
+      border-color: var(--main-purple-for-button-and-text);
+    }
+  }
+  
+  .copy-btn {
+    background: var(--main-purple-for-button-and-text);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.3s ease;
+    
+    &:hover {
+      background: #6f42c1;
+    }
+  }
+}
+
+.invitation-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #ccc;
+    font-size: 0.9rem;
+    
+    i {
+      color: var(--main-purple-for-button-and-text);
+    }
+  }
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  
+  &.valid {
+    background: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+    border: 1px solid #28a745;
+  }
+  
+  &.invalid {
+    background: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+    border: 1px solid #dc3545;
+  }
+}
+
+.invitation-actions {
+  display: flex;
+  justify-content: flex-end;
+  
+  .action-btn.danger {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border: 1px solid #dc3545;
+    
+    &:hover {
+      background: rgba(220, 53, 69, 0.2);
+    }
+  }
+  
+  .disabled-text {
+    color: #888;
+    font-style: italic;
+    font-size: 0.9rem;
+  }
+}
+
+.no-invitations {
+  text-align: center;
+  padding: 2rem;
+  color: #ccc;
+  
+  .no-guild-icon {
+    font-size: 3rem;
+    color: var(--main-purple-for-button-and-text);
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+  
+  p {
+    margin: 0;
+    font-size: 1.1rem;
+  }
+}
+
+.loading-section {
+  text-align: center;
+  padding: 2rem;
+  color: #ccc;
+  
+  .loading-spinner {
+    margin: 0 auto 1rem;
+  }
+}
+
+.guild-content {
+  padding: 0;
+}
+
+// ✅ Responsive
+@media (max-width: 768px) {
+  .invitation-card {
+    padding: 1rem;
+  }
+  
+  .invitation-stats {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .url-input-group {
+    flex-direction: column;
+    
+    .copy-btn {
+      align-self: flex-start;
+    }
+  }
+}
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }

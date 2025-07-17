@@ -5,9 +5,9 @@ import { Observable } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
-export class PlayerService {
+export class GuildInvitationService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://127.0.0.1:8000/api';
+  private apiUrl = 'http://127.0.0.1:8000/api/guilds';
 
   constructor() { }
 
@@ -29,23 +29,34 @@ export class PlayerService {
     });
   }
 
-  // ✅ Mon profil joueur
-  getMyProfile(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/player`, { 
+  // ✅ Créer une invitation
+  createInvitation(maxUses?: number, expiresInHours?: number): Observable<any> {
+    const data: any = {};
+    if (maxUses) data.max_uses = maxUses;
+    if (expiresInHours) data.expires_in_hours = expiresInHours;
+
+    return this.http.post(`${this.apiUrl}/invitations`, data, { 
       headers: this.getAuthHeaders() 
     });
   }
 
-  // ✅ Créer/modifier mon profil
-  createOrUpdateProfile(playerData: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/player`, playerData, { 
+  // ✅ Récupérer mes invitations
+  getMyInvitations(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/invitations`, { 
       headers: this.getAuthHeaders() 
     });
   }
 
-  // ✅ Supprimer mon profil
-  deleteProfile(): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/player`, { 
+  // ✅ Rejoindre via invitation
+  joinViaInvitation(code: string): Observable<any> {
+    return this.http.get(`http://127.0.0.1:8000/api/invite/${code}`, { 
+      headers: this.getAuthHeaders() 
+    });
+  }
+
+  // ✅ Désactiver invitation
+  deactivateInvitation(invitationId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/invitations/${invitationId}`, { 
       headers: this.getAuthHeaders() 
     });
   }
