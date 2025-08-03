@@ -7,7 +7,7 @@ import { catchError, tap, throwError } from 'rxjs';
   providedIn: 'root'
 })
 export class DiscordAuthService {
-  private backendUrl = 'http://127.0.0.1:8000/api/auth/discord';
+  private backendUrl = 'http://82.112.255.241:8080/api/auth/discord';
 
   constructor(private http: HttpClient, private router: Router) {}
 
@@ -18,7 +18,7 @@ export class DiscordAuthService {
   logout() {
     console.log("Tentative de déconnexion...");
 
-    return this.http.get('http://127.0.0.1:8000/api/logout', { withCredentials: true }).pipe(
+    return this.http.get('http://82.112.255.241:8080/api/logout', { withCredentials: true }).pipe(
       tap(() => {
         console.log("Déconnexion réussie");
         // Plus besoin de supprimer le localStorage, le cookie sera supprimé côté serveur

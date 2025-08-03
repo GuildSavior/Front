@@ -8,7 +8,7 @@ import { Observable, throwError } from 'rxjs';
 export class UsersService {
   user: any = null;
   http = inject(HttpClient);
-  private backendUrl = 'http://127.0.0.1:8000/api';
+  private backendUrl = 'http://82.112.255.241:8080/api';
 
   constructor() { }
 

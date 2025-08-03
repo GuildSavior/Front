@@ -13,7 +13,7 @@ export interface Credentials {
 export class LoginService {
 
   private http = inject(HttpClient);
-  private BASE_URL = 'http://127.0.0.1:8000';
+  private BASE_URL = 'http://82.112.255.241:8080';
   user = signal<User | null | undefined>(undefined);
   constructor() { }
 /*

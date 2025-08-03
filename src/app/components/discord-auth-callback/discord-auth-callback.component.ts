@@ -57,7 +57,7 @@ export class DiscordAuthCallbackComponent implements OnInit {
       'Authorization': `Bearer ${token}`
     });
 
-    this.http.get('http://127.0.0.1:8000/api/user', { headers })
+    this.http.get('http://82.112.255.241:8080/api/user', { headers })
       .subscribe({
         next: (user) => {
           console.log('✅ API SUCCESS - Utilisateur connecté:', user);

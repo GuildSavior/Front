@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class GuildInvitationService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://127.0.0.1:8000/api/guilds';
+  private apiUrl = 'http://82.112.255.241:8080/api/guilds';
 
   constructor() { }
 
@@ -49,7 +49,7 @@ export class GuildInvitationService {
 
   // ✅ Rejoindre via invitation
   joinViaInvitation(code: string): Observable<any> {
-    return this.http.get(`http://127.0.0.1:8000/api/invite/${code}`, { 
+    return this.http.get(`http://82.112.255.241:8080/api/invite/${code}`, { 
       headers: this.getAuthHeaders() 
     });
   }

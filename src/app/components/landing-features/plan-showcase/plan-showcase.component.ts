@@ -33,7 +33,7 @@ export class PlanShowcaseComponent implements OnInit {
       });
       
       // Vérifie si l'utilisateur est connecté AVANT de relancer l'achat
-      this.http.get('http://127.0.0.1:8000/api/user', { headers }).subscribe({
+      this.http.get('http://82.112.255.241:8080/api/user', { headers }).subscribe({
         next: (user) => {
           console.log('Utilisateur connecté après login Discord, lancement Stripe...');
           this.launchStripe(headers); // Passe les headers à launchStripe
@@ -91,7 +91,7 @@ export class PlanShowcaseComponent implements OnInit {
       });
     }
     
-    this.http.post<{ url: string }>('http://127.0.0.1:8000/api/stripe/create-checkout-session', {}, { headers })
+    this.http.post<{ url: string }>('http://82.112.255.241:8080/api/stripe/create-checkout-session', {}, { headers })
       .subscribe({
         next: (res) => {
           window.location.href = res.url;

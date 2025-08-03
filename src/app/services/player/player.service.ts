@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class PlayerService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://127.0.0.1:8000/api';
+  private apiUrl = 'http://82.112.255.241:8080/api';
 
   constructor() { }
 
