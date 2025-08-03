@@ -1,15 +1,23 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment'; // ✅ Importer l'environnement
+import { AuthService } from '../auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GuildInvitationService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://82.112.255.241:8080/api/guilds';
+  private authService = inject(AuthService);
+  private apiUrl = environment.apiUrl; // ✅ URL dynamique
 
-  constructor() { }
+  constructor() {
+    // ✅ Log en développement
+    if (environment.enableDebugLogs) {
+      console.log('🔧 GuildInvitationService - API URL:', this.apiUrl);
+    }
+  }
 
   // ✅ Récupérer le token comme dans tes autres services
   private getCookie(name: string): string | null {
@@ -58,6 +66,19 @@ export class GuildInvitationService {
   deactivateInvitation(invitationId: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/invitations/${invitationId}`, { 
       headers: this.getAuthHeaders() 
+    });
+  }
+  // Dans guild-invitation.service.ts
+  joinGuild(code: string): Observable<any> {
+    const url = `${this.apiUrl}/invitations/${code}/join`;
+    
+    if (environment.enableDebugLogs) {
+      console.log('🔧 Appel API joinGuild:', url);
+    }
+    
+    return this.http.post(url, {}, {
+      headers: this.authService.getAuthHeaders(),
+      withCredentials: true
     });
   }
 }

@@ -1,5 +1,5 @@
 <!-- Si user est défini, on affiche les infos -->
-<div class="dashboard" *ngIf="user; else loading">
+<div class="dashboard" *ngIf="!isLoading && user; else loading">
   <div class="dashboard-container">
     <!-- Colonne Infos Utilisateur -->
     <section class="user-info">
@@ -164,7 +164,11 @@
 
 <!-- Template de fallback pendant le chargement -->
 <ng-template #loading>
-  <p class="text-gray-500">Chargement des informations...</p>
+  <div class="loading-container">
+    <div class="loading-spinner"></div>
+    <h3>Chargement de votre dashboard...</h3>
+    <p>Veuillez patienter...</p>
+  </div>
 </ng-template>
 
 <!-- Notification en bas à droite -->

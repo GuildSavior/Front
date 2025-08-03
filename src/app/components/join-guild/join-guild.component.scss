@@ -1,0 +1,52 @@
+// ✅ AJOUTER dans join-guild.component.scss
+
+.debug-info {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.1);
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-top: 0.5rem;
+  font-family: monospace;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.debug-error {
+  margin-top: 1rem;
+  
+  details {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 6px;
+    padding: 1rem;
+    
+    summary {
+      cursor: pointer;
+      color: #f87171;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      
+      &:hover {
+        color: #fca5a5;
+      }
+    }
+    
+    pre {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 1rem;
+      border-radius: 4px;
+      color: #e5e7eb;
+      font-size: 0.8rem;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+  }
+}
+
+// ✅ Masquer en production
+.production-mode {
+  .debug-info,
+  .debug-error {
+    display: none !important;
+  }
+}

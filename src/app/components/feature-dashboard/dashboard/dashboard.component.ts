@@ -6,10 +6,11 @@ import { UsersService } from '../../../services/users/users.service';
 import { DiscordAuthService } from '../../../services/discordAuth/discord-auth.service';
 import { AuthService } from '../../../services/auth.service';
 import { PlanService } from '../../../services/plan/plan.service';
-import { PlayerService } from '../../../services/player/player.service'; // ✅ AJOUTER
-import { User } from '../../../models/user.model';
-import { Player, PlayerClass } from '../../../models/player.model';
+import { PlayerService } from '../../../services/player/player.service';
+import { User } from '../../../models/user.model'; // ✅ CORRIGER le chemin
+import { Player, PlayerClass } from '../../../models/player.model'; // ✅ CORRIGER le chemin
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-dashboard',
@@ -36,7 +37,7 @@ export class DashboardComponent implements OnInit {
   discordAuthService = inject(DiscordAuthService);
   authService = inject(AuthService);
   planService = inject(PlanService);
-  playerService = inject(PlayerService); // ✅ AJOUTER
+  playerService = inject(PlayerService);
   route = inject(ActivatedRoute);
   router = inject(Router);
   
@@ -53,7 +54,7 @@ export class DashboardComponent implements OnInit {
   } = {
     name: '',
     level: 1,
-    class: 'dps' // ✅ Par défaut DPS
+    class: 'dps'
   };
 
   // ✅ Profil joueur actuel
@@ -64,58 +65,125 @@ export class DashboardComponent implements OnInit {
     events_joined: 0
   };
 
-  user: User = {
-    id: 0,
-    email: '',
-    discord_id: '',
-    avatar: '',
-    statut: '',
-    total_dkp: 0,
-    created_at: '',
-    updated_at: '',
-    remember_token: null,
-    username: null,
-    refresh_token: null,
-    guild_id: null,
-    role_id: null,
-    is_premium: false,
-    subscription: null,
-    guild: null,
-    role: null
-  };
-
+  // ✅ CORRIGER: Utiliser null au lieu d'un objet vide
+  user: User | null = null;
   notification: string | null = null;
+  isLoading = true; // ✅ AJOUTER pour l'état de chargement
+  environment: any;
 
   ngOnInit() {
-    this.authService.checkAuthStatus().subscribe({
-      next: (user) => {
-        if (user) {
-          this.user = user;
-          console.log('📊 Statut Premium:', this.planService.isPremiumActive(this.user));
+    // ✅ Debug en développement
+    if (environment.enableDebugLogs) {
+      console.log('🔧 DashboardComponent - Initialisation');
+    }
+
+    // ✅ AFFICHER l'environnement actuel
+    console.log('🌍 ENVIRONNEMENT ACTUEL:', environment.environmentName);
+    console.log('🌍 API URL:', environment.apiUrl);
+    console.log('🌍 Production:', environment.production);
+    console.log('🌍 Debug activé:', environment.enableDebugLogs);
+    
+    // ✅ Vérifier d'abord si on est connecté
+    if (!this.authService.isLoggedIn()) {
+      if (environment.enableDebugLogs) {
+        console.log('🔧 Dashboard - Utilisateur non connecté, redirection vers Discord');
+      }
+      localStorage.setItem('pendingDashboardSuccess', '1');
+      this.discordAuthService.loginWithDiscord();
+      return;
+    }
+
+    // ✅ CORRIGER: Extraire user depuis la réponse API
+    this.userService.getUserInformation().subscribe({
+      next: (response: any) => {
+        if (environment.enableDebugLogs) {
+          console.log('🔧 Dashboard - Réponse API complète:', response);
+          console.log('🔧 Status:', response.status);
+          console.log('🔧 User dans la réponse:', response.user);
+        }
+
+        // ✅ CORRIGER: Extraire l'utilisateur depuis response.user
+        if (response.status === 'success' && response.user) {
+          this.user = response.user; // ✅ UTILISER response.user au lieu de response
           
-          // ✅ Charger le profil joueur
-          this.loadPlayerProfile();
-          
-          this.route.queryParams.subscribe(params => {
-            if (params['payment'] === 'success') {
-              this.notification = 'Abonnement premium activé avec succès ! 🎉';
-              this.router.navigate(['/dashboard'], { 
-                queryParams: {},
-                replaceUrl: true 
-              });
-            }
-          });
+          if (environment.enableDebugLogs) {
+            console.log('🔧 Username:', this.user?.username);
+            console.log('🔧 Avatar:', this.user?.avatar);
+            console.log('🔧 Discord ID:', this.user?.discord_id);
+            console.log('🔧 Is Premium:', this.user?.is_premium);
+            console.log('🔧 Guild ID:', this.user?.guild_id);
+          }
         } else {
+          console.error('❌ Structure de réponse inattendue:', response);
+          this.user = null;
+        }
+        
+        this.isLoading = false;
+        
+        // ✅ FORCER le changement de détection
+        setTimeout(() => {
+          if (environment.enableDebugLogs) {
+            console.log('🔧 this.user final:', this.user);
+            console.log('🔧 this.userName getter:', this.userName);
+            console.log('🔧 this.userAvatar getter:', this.userAvatar);
+          }
+        }, 100);
+        
+        this.loadPlayerProfile();
+        this.handleQueryParams();
+      },
+      error: (error) => {
+        console.error('❌ Erreur récupération utilisateur:', error);
+        console.error('❌ Status:', error.status);
+        console.error('❌ Message:', error.message);
+        console.error('❌ Error complet:', error);
+        
+        this.isLoading = false;
+        
+        if (error.status === 401 || error.status === 403) {
+          if (environment.enableDebugLogs) {
+            console.log('🔧 Dashboard - Token invalide, redirection vers Discord');
+          }
           localStorage.setItem('pendingDashboardSuccess', '1');
           this.discordAuthService.loginWithDiscord();
+        } else {
+          this.notification = '❌ Erreur lors du chargement des données';
+          setTimeout(() => this.notification = null, 4000);
         }
       }
     });
   }
 
-  // ✅ NOUVELLES méthodes pour le profil joueur
+  // ✅ NOUVELLE méthode pour gérer les paramètres de requête
+  private handleQueryParams() {
+    this.route.queryParams.subscribe(params => {
+      if (params['payment'] === 'success') {
+        this.notification = 'Abonnement premium activé avec succès ! 🎉';
+        // Nettoyer l'URL sans recharger la page
+        this.router.navigate(['/dashboard'], { 
+          queryParams: {},
+          replaceUrl: true 
+        });
+        setTimeout(() => this.notification = null, 5000);
+      }
+      
+      if (params['loginSuccess'] === '1') {
+        this.notification = 'Connexion réussie ! Bienvenue 👋';
+        this.router.navigate(['/dashboard'], { 
+          queryParams: {},
+          replaceUrl: true 
+        });
+        setTimeout(() => this.notification = null, 4000);
+      }
+    });
+  }
 
+  // ✅ Charger le profil joueur
   loadPlayerProfile() {
+    if (environment.enableDebugLogs) {
+      console.log('🔧 Dashboard - Chargement du profil joueur');
+    }
+
     this.playerService.getMyProfile().subscribe({
       next: (response) => {
         if (response.success && response.player) {
@@ -124,47 +192,54 @@ export class DashboardComponent implements OnInit {
           this.playerForm = {
             name: response.player.name,
             level: response.player.level,
-            class: response.player.class // ✅ Récupère le rôle sauvegardé
+            class: response.player.class
           };
-          // ✅ Synchroniser avec player.classe pour l'affichage
           this.player.classe = response.player.class;
-          console.log('✅ Profil joueur chargé:', this.currentPlayer);
+          
+          if (environment.enableDebugLogs) {
+            console.log('✅ Profil joueur chargé:', this.currentPlayer);
+          }
         } else {
           this.hasPlayerProfile = false;
-          console.log('ℹ️ Aucun profil joueur trouvé');
+          if (environment.enableDebugLogs) {
+            console.log('ℹ️ Aucun profil joueur trouvé');
+          }
         }
       },
       error: (error) => {
         this.hasPlayerProfile = false;
-        console.log('ℹ️ Pas de profil joueur encore créé');
+        if (environment.enableDebugLogs) {
+          console.log('ℹ️ Pas de profil joueur encore créé');
+        }
       }
     });
   }
 
   startEditPlayer() {
     this.isEditingPlayer = true;
-    // ✅ Synchroniser le formulaire avec le profil actuel
-    if (this.hasPlayerProfile) {
-      this.playerForm.class = this.currentPlayer.class;
+    if (this.hasPlayerProfile && this.currentPlayer) {
+      this.playerForm = {
+        name: this.currentPlayer.name,
+        level: this.currentPlayer.level,
+        class: this.currentPlayer.class
+      };
     }
   }
 
   cancelEditPlayer() {
     this.isEditingPlayer = false;
-    if (this.hasPlayerProfile) {
-      // Restaurer les valeurs originales
+    if (this.hasPlayerProfile && this.currentPlayer) {
       this.playerForm = {
         name: this.currentPlayer.name,
         level: this.currentPlayer.level,
-        class: this.currentPlayer.class // ✅ Restaurer le rôle original
+        class: this.currentPlayer.class
       };
-      this.player.classe = this.currentPlayer.class; // ✅ Synchroniser l'affichage
+      this.player.classe = this.currentPlayer.class;
     } else {
-      // Réinitialiser le formulaire
       this.playerForm = {
         name: '',
         level: 1,
-        class: 'dps' // ✅ Par défaut DPS
+        class: 'dps'
       };
       this.player.classe = 'dps';
     }
@@ -185,21 +260,20 @@ export class DashboardComponent implements OnInit {
 
     this.isSubmittingPlayer = true;
 
-    // ✅ Envoyer les données avec le rôle comme classe
     this.playerService.createOrUpdateProfile(this.playerForm).subscribe({
       next: (response) => {
         if (response.success) {
           this.currentPlayer = response.player;
           this.hasPlayerProfile = true;
           this.isEditingPlayer = false;
-          
-          // ✅ Synchroniser l'affichage avec la classe sauvegardée
           this.player.classe = this.playerForm.class;
           
           this.notification = `✅ ${response.message}`;
           setTimeout(() => this.notification = null, 4000);
-          console.log('✅ Profil sauvegardé:', this.currentPlayer);
-          console.log('✅ Rôle sauvegardé:', this.player.classe);
+          
+          if (environment.enableDebugLogs) {
+            console.log('✅ Profil sauvegardé:', this.currentPlayer);
+          }
         }
         this.isSubmittingPlayer = false;
       },
@@ -226,9 +300,9 @@ export class DashboardComponent implements OnInit {
           this.playerForm = {
             name: '',
             level: 1,
-            class: 'dps' // ✅ Par défaut DPS
+            class: 'dps'
           };
-          this.player.classe = 'dps'; // ✅ Réinitialiser l'affichage
+          this.player.classe = 'dps';
           this.notification = '✅ Profil joueur supprimé avec succès';
           setTimeout(() => this.notification = null, 4000);
         }
@@ -241,20 +315,66 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  // ✅ Méthodes existantes...
+  // ✅ CORRIGER les méthodes existantes pour vérifier si user existe
   isPremium(): boolean {
+    if (!this.user) return false;
     return this.planService.isPremiumActive(this.user);
   }
 
   getSubscriptionInfo() {
+    if (!this.user) return null;
     return this.planService.getSubscriptionDetails(this.user);
   }
 
   getPremiumBadgeClass(): string {
+    if (!this.user) return '';
     return this.planService.getPremiumBadgeClass(this.user);
   }
 
   goToGuild() {
     this.router.navigate(['/guild']);
+  }
+
+  // ✅ AJOUTER des getters pour le template
+  get userName(): string {
+    const name = this.user?.username || 'Utilisateur';
+    if (environment.enableDebugLogs) {
+      console.log('🔧 userName getter appelé, user:', this.user, 'name:', name);
+    }
+    return name;
+  }
+
+  get userAvatar(): string {
+    const avatar = this.user?.avatar || '/assets/default-avatar.png';
+    if (environment.enableDebugLogs) {
+      console.log('🔧 userAvatar getter appelé, user:', this.user, 'avatar:', avatar);
+    }
+    return avatar;
+  }
+
+  get totalDkp(): number {
+    const dkp = this.user?.total_dkp || 0;
+    if (environment.enableDebugLogs) {
+      console.log('🔧 totalDkp getter appelé, user:', this.user, 'dkp:', dkp);
+    }
+    return dkp;
+  }
+
+  get hasGuild(): boolean {
+    const hasGuild = !!this.user?.guild_id;
+    if (environment.enableDebugLogs) {
+      console.log('🔧 hasGuild getter appelé, user:', this.user, 'hasGuild:', hasGuild);
+    }
+    return hasGuild;
+  }
+
+  // ✅ AJOUTER méthode de déconnexion
+  logout() {
+    if (environment.enableDebugLogs) {
+      console.log('🔧 Dashboard - Déconnexion demandée');
+    }
+    
+    // ✅ Plus besoin de logoutAndRedirect(), juste logout()
+    this.authService.logout();
   }
 }

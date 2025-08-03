@@ -12,6 +12,7 @@ import { MainLayoutComponent } from './components/layouts/main-layout/main-layou
 import { LandingLayoutComponent } from './components/layouts/landing-layout/landing-layout.component';
 import { LandingPageComponent } from './components/landing-features/landing/landing-page.component';
 import { MembersComponent } from './components/feature-dashboard/options/members/members.component';
+import { JoinGuildComponent } from './components/join-guild/join-guild.component';
 
 export const routes: Routes = [
   // Routes sans layout
@@ -38,8 +39,9 @@ export const routes: Routes = [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'profile', component: DashboardComponent },
       { path: 'guild', component: GuildComponent },
-      { path: 'members', component: MembersComponent }, // ✅ Nouvelle route
-    ],
+      { path: 'members', component: MembersComponent },
+      { path: 'join-guild/:code', component: JoinGuildComponent }
+    ]
   },
 
   // Fallback
