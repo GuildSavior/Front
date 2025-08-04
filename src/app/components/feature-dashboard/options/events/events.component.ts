@@ -63,10 +63,6 @@ export class EventsComponent implements OnInit {
     const userId = Number(this.user.id);
     const ownerId = Number(this.guild.owner_id);
     
-    if (environment.enableDebugLogs) {
-      console.log('🔧 isGuildOwner check:', { userId, ownerId });
-    }
-    
     return userId === ownerId;
   }
 
@@ -340,28 +336,6 @@ export class EventsComponent implements OnInit {
     });
   }
 
-  // ✅ OUVRIR MODAL VALIDATION - Corriger
-  openValidationModal(event: Event) {
-    if (!event.user_participation?.status) {
-      this.errorMessage = 'Vous devez d\'abord vous inscrire à l\'événement.';
-      setTimeout(() => this.errorMessage = '', 3000);
-      return;
-    }
-
-    if (event.user_participation.status === 'attended') {
-      this.errorMessage = 'Vous avez déjà validé votre présence pour cet événement.';
-      setTimeout(() => this.errorMessage = '', 3000);
-      return;
-    }
-
-    this.selectedEvent = event;
-    this.validationForm.eventId = event.id;
-    this.validationForm.code = '';
-    this.showValidationModal = true;
-    this.errorMessage = '';
-    this.successMessage = '';
-  }
-
   // ✅ VALIDER PRÉSENCE AVEC CODE - Corriger
   validateAttendance() {
     if (!this.validationForm.code.trim()) {
@@ -383,8 +357,6 @@ export class EventsComponent implements OnInit {
           // ✅ Recharger les événements
           this.loadEvents();
           this.successMessage = `🎉 Présence validée ! Vous avez reçu ${response.dkp_earned} DKP !`;
-          this.closeValidationModal();
-          
           setTimeout(() => this.successMessage = '', 5000);
         } else {
           this.errorMessage = response.message || 'Code de validation incorrect.';
@@ -405,17 +377,6 @@ export class EventsComponent implements OnInit {
         }
       }
     });
-  }
-
-  // ✅ FERMER MODAL VALIDATION
-  closeValidationModal() {
-    this.showValidationModal = false;
-    this.selectedEvent = null;
-    this.validationForm = {
-      eventId: null,
-      code: ''
-    };
-    this.errorMessage = '';
   }
 
   // ✅ UTILITAIRES - Corriger selon ton backend
@@ -477,9 +438,30 @@ export class EventsComponent implements OnInit {
 
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(event.access_code).then(() => {
-        this.successMessage = '📋 Code d\'accès copié !';
-        setTimeout(() => this.successMessage = '', 2000);
+        // ✅ Feedback visuel amélioré
+        this.successMessage = `📋 Code "${event.access_code}" copié dans le presse-papier !`;
+        
+        // ✅ Ajouter effet visuel sur le bouton (optionnel)
+        const copyBtn = document.querySelector(`[data-event-id="${event.id}"] .copy-code-btn`);
+        if (copyBtn) {
+          copyBtn.classList.add('copied');
+          setTimeout(() => copyBtn.classList.remove('copied'), 600);
+        }
+        
+        setTimeout(() => this.successMessage = '', 3000);
+        
+        if (environment.enableDebugLogs) {
+          console.log('✅ Code d\'accès copié:', event.access_code);
+        }
+      }).catch((err) => {
+        console.error('❌ Erreur copie:', err);
+        this.errorMessage = 'Impossible de copier le code. Copiez-le manuellement.';
+        setTimeout(() => this.errorMessage = '', 3000);
       });
+    } else {
+      // ✅ Fallback pour navigateurs non compatibles
+      this.errorMessage = 'Copie automatique non supportée. Copiez le code manuellement.';
+      setTimeout(() => this.errorMessage = '', 3000);
     }
   }
 
@@ -516,5 +498,299 @@ export class EventsComponent implements OnInit {
   // ✅ Navigation
   goToDashboard() {
     this.router.navigate(['/dashboard']);
+  }
+
+  // ✅ NOUVEAU: Gestion des codes de validation par événement
+  eventValidationCodes: { [eventId: number]: string } = {};
+  validatingEvents: Set<number> = new Set();
+
+  // ✅ NOUVEAU: Méthodes pour gérer la validation directe
+  getEventValidationCode(eventId: number): string {
+    return this.eventValidationCodes[eventId] || '';
+  }
+
+  setEventValidationCode(eventId: number, code: string): void {
+    this.eventValidationCodes[eventId] = code;
+  }
+
+  isValidatingEvent(eventId: number): boolean {
+    return this.validatingEvents.has(eventId);
+  }
+
+  // ✅ NOUVELLE: Méthode de validation simplifiée
+  validateEventAttendance(event: Event) {
+    const code = this.eventValidationCodes[event.id];
+    
+    if (!code || !code.trim()) {
+      this.errorMessage = 'Veuillez entrer le code de validation donné par l\'organisateur.';
+      setTimeout(() => this.errorMessage = '', 3000);
+      return;
+    }
+
+    // ✅ CORRECTION: Vérifier si la validation est encore possible (avec debug)
+    const canValidate = this.canValidateAttendance(event);
+    const now = new Date();
+    const endTime = new Date(event.end_time);
+    const gracePeriod = new Date(endTime.getTime() + (30 * 60 * 1000));
+    
+    console.log('🔍 Debug validation:', {
+      eventName: event.name,
+      now: now.toLocaleString(),
+      endTime: endTime.toLocaleString(),
+      gracePeriod: gracePeriod.toLocaleString(),
+      canValidate: canValidate,
+      userStatus: this.getUserParticipationStatus(event)
+    });
+
+    if (!canValidate) {
+      if (now > gracePeriod) {
+        this.errorMessage = 'Cet événement est terminé. La validation n\'est plus possible (délai de 30 min dépassé).';
+      } else if (now < new Date(event.start_time)) {
+        this.errorMessage = 'La validation n\'est pas encore disponible pour cet événement.';
+      } else {
+        this.errorMessage = 'Vous devez confirmer votre venue pour pouvoir valider votre présence.';
+      }
+      setTimeout(() => this.errorMessage = '', 4000);
+      return;
+    }
+
+    // Vérifications préalables
+    if (this.getUserParticipationStatus(event) === 'attended') {
+      this.errorMessage = 'Vous avez déjà validé votre présence pour cet événement.';
+      setTimeout(() => this.errorMessage = '', 3000);
+      return;
+    }
+
+    if (this.getUserParticipationStatus(event) === 'not_participating') {
+      this.errorMessage = 'Vous devez d\'abord vous inscrire à cet événement.';
+      setTimeout(() => this.errorMessage = '', 3000);
+      return;
+    }
+
+    if (this.getUserParticipationStatus(event) === 'interested') {
+      this.errorMessage = 'Vous devez d\'abord confirmer votre venue avant de pouvoir valider votre présence.';
+      setTimeout(() => this.errorMessage = '', 3000);
+      return;
+    }
+
+    // Démarrer la validation
+    this.validatingEvents.add(event.id);
+    this.errorMessage = '';
+
+    console.log(`🎯 Validation présence pour "${event.name}" avec code: ${code}`);
+
+    this.eventService.validateAttendance(event.id, code.trim().toUpperCase()).subscribe({
+      next: (response) => {
+        this.validatingEvents.delete(event.id);
+        
+        if (response.success) {
+          // ✅ Recharger les événements pour mettre à jour l'état
+          this.loadEvents();
+          
+          // ✅ Vider le code de validation
+          this.eventValidationCodes[event.id] = '';
+          
+          // ✅ Message de succès avec DKP
+          this.successMessage = `🎉 Félicitations ! Présence validée avec succès !
+            \n💰 Vous avez reçu ${response.dkp_earned} DKP
+            \n🏆 Total DKP: ${response.total_dkp}`;
+          
+          setTimeout(() => this.successMessage = '', 6000);
+          
+          // ✅ Log de succès
+          console.log('✅ Validation réussie:', {
+            event: event.name,
+            dkp_earned: response.dkp_earned,
+            total_dkp: response.total_dkp
+          });
+        } else {
+          this.errorMessage = response.message || 'Code de validation incorrect.';
+          setTimeout(() => this.errorMessage = '', 3000);
+        }
+      },
+      error: (error) => {
+        this.validatingEvents.delete(event.id);
+        console.error('❌ Erreur validation:', error);
+        
+        // Messages d'erreur plus précis
+        if (error.status === 400) {
+          const errorMsg = error.error?.message || 'Code de validation incorrect.';
+          this.errorMessage = errorMsg;
+        } else if (error.status === 403) {
+          this.errorMessage = 'Vous n\'êtes pas autorisé à valider cette présence.';
+        } else if (error.status === 404) {
+          this.errorMessage = 'Événement introuvable.';
+        } else if (error.status === 410) {
+          this.errorMessage = 'Cet événement est terminé. La validation n\'est plus possible.';
+        } else {
+          this.errorMessage = 'L\'événement est peut-être terminé ou le code est incorrect.';
+        }
+        
+        setTimeout(() => this.errorMessage = '', 4000);
+      }
+    });
+  }
+  // ✅ SUPPRIMER UN ÉVÉNEMENT (Owner seulement)
+  deleteEvent(event: Event) {
+    if (!this.isGuildOwner) {
+      this.errorMessage = 'Seul le propriétaire de la guilde peut supprimer des événements.';
+      setTimeout(() => this.errorMessage = '', 3000);
+      return;
+    }
+
+    // Confirmation avec plus d'infos
+    const participants = event.participant_count || 0;
+    const confirmMessage = participants > 0 
+      ? `⚠️ ATTENTION ⚠️\n\nVous êtes sur le point de supprimer l'événement "${event.name}".\n\n👥 ${participants} participant(s) inscrit(s)\n\nCette action est irréversible et supprimera toutes les participations.\n\nContinuer ?`
+      : `Supprimer l'événement "${event.name}" ?\n\nCette action est irréversible.`;
+    
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    // ✅ Animation de suppression
+    const eventCard = document.querySelector(`[data-event-id="${event.id}"]`);
+    if (eventCard) {
+      eventCard.classList.add('deleting');
+    }
+
+    this.deletingEvents.add(event.id);
+    this.errorMessage = '';
+
+    console.log(`🗑️ Suppression de l'événement "${event.name}" (ID: ${event.id})`);
+
+    this.eventService.deleteEvent(event.id).subscribe({
+      next: (response) => {
+        this.deletingEvents.delete(event.id);
+        
+        if (response.success) {
+          // ✅ Attendre la fin de l'animation avant de retirer de la liste
+          setTimeout(() => {
+            this.events = this.events.filter(e => e.id !== event.id);
+          }, 500);
+          
+          this.successMessage = `🗑️ Événement "${event.name}" supprimé avec succès !`;
+          setTimeout(() => this.successMessage = '', 4000);
+          
+          console.log('✅ Événement supprimé:', event.name);
+        } else {
+          // ✅ Retirer l'animation en cas d'erreur
+          if (eventCard) {
+            eventCard.classList.remove('deleting');
+          }
+          
+          this.errorMessage = response.message || 'Erreur lors de la suppression.';
+          setTimeout(() => this.errorMessage = '', 3000);
+        }
+      },
+      error: (error) => {
+        this.deletingEvents.delete(event.id);
+        
+        // ✅ Retirer l'animation en cas d'erreur
+        if (eventCard) {
+          eventCard.classList.remove('deleting');
+        }
+        
+        console.error('❌ Erreur suppression événement:', error);
+        
+        if (error.status === 403) {
+          this.errorMessage = 'Vous n\'êtes pas autorisé à supprimer cet événement.';
+        } else if (error.status === 404) {
+          this.errorMessage = 'Événement introuvable.';
+        } else {
+          this.errorMessage = error.error?.message || 'Erreur lors de la suppression de l\'événement.';
+        }
+        
+        setTimeout(() => this.errorMessage = '', 4000);
+      }
+    });
+  }
+  // ✅ AJOUTER cette propriété au début de la classe avec les autres
+  deletingEvents: Set<number> = new Set();
+
+  // ✅ Vérifier si l'événement est réellement terminé (pas juste le statut)
+  isEventReallyFinished(event: Event): boolean {
+    const now = new Date();
+    const endTime = new Date(event.end_time);
+    // ✅ CORRECTION: Terminé seulement après la grace period
+    const gracePeriod = new Date(endTime.getTime() + (30 * 60 * 1000));
+    return now > gracePeriod;
+  }
+
+  // ✅ Vérifier si la validation est encore possible
+  canValidateAttendance(event: Event): boolean {
+    // L'utilisateur doit être confirmé
+    if (this.getUserParticipationStatus(event) !== 'confirmed') {
+      return false;
+    }
+    
+    // Vérification temporelle basée sur les vraies dates, pas le statut
+    const now = new Date();
+    const startTime = new Date(event.start_time);
+    const endTime = new Date(event.end_time);
+    
+    // Grace period de 30 minutes après la fin
+    const gracePeriod = new Date(endTime.getTime() + (30 * 60 * 1000));
+    
+    // ✅ CORRECTION: Validation possible si:
+    // - L'événement a commencé ET
+    // - Nous sommes encore dans la période de grâce
+    return now >= startTime && now <= gracePeriod;
+  }
+
+  // ✅ Obtenir le message d'info pour la validation
+  getValidationMessage(event: Event): string {
+    const now = new Date();
+    const startTime = new Date(event.start_time);
+    const endTime = new Date(event.end_time);
+    const gracePeriod = new Date(endTime.getTime() + (30 * 60 * 1000));
+    
+    if (now > gracePeriod) {
+      return 'Événement terminé - La validation n\'est plus possible';
+    }
+    
+    if (now < startTime) {
+      return 'L\'événement n\'a pas encore commencé';
+    }
+    
+    // Si l'événement est fini mais on est dans la grace period
+    if (now > endTime && now <= gracePeriod) {
+      const timeLeft = gracePeriod.getTime() - now.getTime();
+      const minutesLeft = Math.floor(timeLeft / (1000 * 60));
+      return `Validation encore possible pendant ${minutesLeft} minute${minutesLeft > 1 ? 's' : ''} !`;
+    }
+    
+    return `Saisissez le code donné par l'organisateur pour recevoir ${event.dkp_reward} DKP`;
+  }
+
+  // ✅ Obtenir le temps restant pour la validation
+  getValidationTimeRemaining(event: Event): string {
+    if (this.isEventReallyFinished(event)) {
+      return 'Validation expirée';
+    }
+
+    const now = new Date();
+    const endTime = new Date(event.end_time);
+    const gracePeriod = new Date(endTime.getTime() + (30 * 60 * 1000)); // 30 min grace period
+    
+    if (now > gracePeriod) {
+      return 'Validation expirée';
+    }
+
+    const timeLeft = gracePeriod.getTime() - now.getTime();
+    const minutesLeft = Math.floor(timeLeft / (1000 * 60));
+    
+    if (minutesLeft <= 0) {
+      return 'Validation expire dans quelques secondes';
+    }
+    
+    if (minutesLeft < 60) {
+      return `Validation expire dans ${minutesLeft} minute${minutesLeft > 1 ? 's' : ''}`;
+    }
+    
+    const hoursLeft = Math.floor(minutesLeft / 60);
+    const remainingMinutes = minutesLeft % 60;
+    
+    return `Validation expire dans ${hoursLeft}h${remainingMinutes > 0 ? remainingMinutes + 'm' : ''}`;
   }
 }

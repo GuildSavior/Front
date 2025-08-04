@@ -148,8 +148,8 @@ export class EventService {
 
   // ✅ Valider sa présence avec le code
   validateAttendance(eventId: number, accessCode: string): Observable<any> {
-    const url = `${this.apiUrl}/guilds/events/${eventId}/validate`;
-    this.debugLog('Validation présence', { eventId, url, code: '***' });
+    const url = `${this.apiUrl}/guilds/events/${eventId}/validate`; // ✅ CORRIGER selon ta route
+    this.debugLog('Validation présence', { eventId, url, code: accessCode });
     
     return this.http.post(url, { 
       access_code: accessCode
@@ -162,6 +162,25 @@ export class EventService {
       }),
       catchError((error) => {
         this.debugLog('❌ Erreur validation présence', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // ✅ Supprimer un événement (owner seulement)
+  deleteEvent(eventId: number): Observable<any> {
+    const url = `${this.apiUrl}/guilds/events/${eventId}`;
+    this.debugLog('Suppression événement', { eventId, url });
+    
+    return this.http.delete(url, { 
+      headers: this.getAuthHeaders(),
+      withCredentials: true
+    }).pipe(
+      tap((response) => {
+        this.debugLog('✅ Événement supprimé', response);
+      }),
+      catchError((error) => {
+        this.debugLog('❌ Erreur suppression événement', error);
         return throwError(() => error);
       })
     );

@@ -3,14 +3,19 @@
   <!-- Header -->
   <div class="events-header">
     <div class="header-content">
-      <h1>🎯 Événements de guilde</h1>
+      <!-- ✅ NOUVEAU : Titre simple en violet comme guild -->
+      <h1 class="page-title">
+        <i class="fas fa-calendar-alt mr-3"></i>
+        Événements de guilde
+      </h1>
       <p *ngIf="guild" class="guild-info">{{ guild.name }}</p>
     </div>
     
     <!-- Bouton créer événement (owner seulement) -->
     <div class="header-actions" *ngIf="isGuildOwner">
+      <!-- ✅ NOUVEAU : Même style que les boutons guild -->
       <button 
-        class="create-event-btn" 
+        class="action-btn create-event-btn" 
         (click)="showCreateEventForm()"
         [disabled]="showCreateForm">
         <i class="fas fa-plus mr-2"></i>
@@ -34,289 +39,325 @@
   <div *ngIf="showCreateForm" class="create-event-form">
     <div class="form-card">
       <div class="form-header">
-        <h3>📅 Créer un nouvel événement</h3>
+        <h3>Créer un nouvel événement</h3>
         <button class="close-btn" (click)="cancelCreateEvent()">
           <i class="fas fa-times"></i>
         </button>
       </div>
-      
-      <form (ngSubmit)="createEvent()" #eventFormRef="ngForm">
-        <div class="form-row">
-          <div class="form-group">
-            <label for="event-name">Nom de l'événement *</label>
-            <input 
-              type="text" 
-              id="event-name"
-              class="form-input"
-              [(ngModel)]="eventForm.name"
-              name="name"
-              placeholder="Ex: Raid Donjon des Flammes"
-              required
-              maxlength="255">
-          </div>
-        </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="event-description">Description</label>
-            <textarea 
-              id="event-description"
-              class="form-textarea"
-              [(ngModel)]="eventForm.description"
-              name="description"
-              placeholder="Détails de l'événement..."
-              rows="3"
-              maxlength="1000"></textarea>
-          </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="eventName">Nom de l'événement</label>
+          <input 
+            id="eventName"
+            type="text" 
+            class="form-input"
+            [(ngModel)]="eventForm.name"
+            placeholder="Ex: Raid Molten Core"
+            maxlength="255">
         </div>
+      </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="event-start">Début *</label>
-            <input 
-              type="datetime-local" 
-              id="event-start"
-              class="form-input"
-              [(ngModel)]="eventForm.start_time"
-              name="start_time"
-              required>
-          </div>
-          
-          <div class="form-group">
-            <label for="event-end">Fin *</label>
-            <input 
-              type="datetime-local" 
-              id="event-end"
-              class="form-input"
-              [(ngModel)]="eventForm.end_time"
-              name="end_time"
-              required>
-          </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="eventDescription">Description</label>
+          <textarea 
+            id="eventDescription"
+            class="form-textarea"
+            [(ngModel)]="eventForm.description"
+            placeholder="Décrivez l'événement..."
+            maxlength="1000"
+            rows="3">
+          </textarea>
         </div>
+      </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="dkp-reward">Récompense DKP *</label>
-            <input 
-              type="number" 
-              id="dkp-reward"
-              class="form-input"
-              [(ngModel)]="eventForm.dkp_reward"
-              name="dkp_reward"
-              min="1"
-              max="1000"
-              required>
-          </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="startTime">Début</label>
+          <input 
+            id="startTime"
+            type="datetime-local" 
+            class="form-input"
+            [(ngModel)]="eventForm.start_time">
         </div>
+        <div class="form-group">
+          <label for="endTime">Fin</label>
+          <input 
+            id="endTime"
+            type="datetime-local" 
+            class="form-input"
+            [(ngModel)]="eventForm.end_time">
+        </div>
+      </div>
 
-        <div class="form-actions">
-          <button 
-            type="button" 
-            class="btn-secondary" 
-            (click)="cancelCreateEvent()"
-            [disabled]="isSubmitting">
-            Annuler
-          </button>
-          
-          <button 
-            type="submit" 
-            class="btn-primary"
-            [disabled]="isSubmitting || !eventFormRef.form.valid">
-            <i *ngIf="isSubmitting" class="fas fa-spinner fa-spin mr-2"></i>
-            <i *ngIf="!isSubmitting" class="fas fa-calendar-plus mr-2"></i>
-            {{ isSubmitting ? 'Création...' : 'Créer l\'événement' }}
-          </button>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="dkpReward">Récompense DKP</label>
+          <input 
+            id="dkpReward"
+            type="number" 
+            class="form-input"
+            [(ngModel)]="eventForm.dkp_reward"
+            min="1" 
+            max="1000">
         </div>
-      </form>
+      </div>
+
+      <div class="form-actions">
+        <button 
+          type="button" 
+          class="btn-secondary" 
+          (click)="cancelCreateEvent()"
+          [disabled]="isSubmitting">
+          Annuler
+        </button>
+        
+        <button 
+          type="button" 
+          class="btn-primary"
+          (click)="createEvent()"
+          [disabled]="isSubmitting">
+          <i *ngIf="isSubmitting" class="fas fa-spinner fa-spin mr-2"></i>
+          <i *ngIf="!isSubmitting" class="fas fa-plus mr-2"></i>
+          {{ isSubmitting ? 'Création...' : 'Créer l\'événement' }}
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- Liste des événements -->
+  <!-- Section des événements -->
   <div class="events-section">
-    <!-- Loading événements -->
     <div *ngIf="isLoadingEvents" class="loading-events">
       <div class="loading-spinner"></div>
       <p>Chargement des événements...</p>
     </div>
 
-    <!-- Aucun événement -->
-    <div *ngIf="!isLoadingEvents && events.length === 0" class="no-guild">
-      <div class="no-guild-card">
-        <div class="no-guild-icon">
-          <i class="fas fa-calendar-times"></i>
-        </div>
-        <h2>Aucun événement</h2>
-        <p>Il n'y a aucun événement planifié dans votre guilde pour le moment.</p>
-        
-        <div *ngIf="isGuildOwner">
-          <button class="create-guild-btn" (click)="showCreateEventForm()">
-            <i class="fas fa-plus mr-2"></i>
-            Créer le premier événement
-          </button>
-        </div>
-      </div>
-    </div>
-
     <!-- Liste des événements -->
-    <div *ngIf="!isLoadingEvents && events.length > 0" class="events-list">
-      <div 
-        *ngFor="let event of events" 
-        class="event-card"
-        [class]="'event-' + event.status">
+    <div *ngIf="!isLoadingEvents" class="events-list">
+      
+      <div *ngFor="let event of events" class="event-card" [attr.data-event-id]="event.id">
         
-        <!-- Header de l'événement -->
+        <!-- Header -->
         <div class="event-header">
           <div class="event-info">
             <h3 class="event-title">{{ event.name }}</h3>
-            <p *ngIf="event.description" class="event-description">{{ event.description }}</p>
+            <p class="event-description">{{ event.description }}</p>
           </div>
           
-          <div class="event-status">
-            <span class="status-badge" [class]="'status-' + event.status">
-              <i class="fas" [class]="getEventStatusIcon(event)"></i>
-              {{ getEventStatusText(event) }}
-            </span>
-          </div>
-        </div>
-
-        <!-- Détails de l'événement -->
-        <div class="event-details">
-          <div class="detail-item">
-            <i class="fas fa-clock"></i>
-            <span>{{ event.start_time | date:'dd/MM/yyyy HH:mm' }} - {{ event.end_time | date:'dd/MM/yyyy HH:mm' }}</span>
-          </div>
-          
-          <div class="detail-item">
-            <i class="fas fa-coins"></i>
-            <span>{{ event.dkp_reward }} DKP</span>
-          </div>
-          
-          <div class="detail-item">
-            <i class="fas fa-users"></i>
-            <span>{{ event.participant_count }} participant(s) • {{ event.confirmed_count }} confirmé(s) • {{ event.attended_count }} présent(s)</span>
-          </div>
-
-          <!-- Code d'accès (owner seulement) -->
-          <div *ngIf="isGuildOwner && event.access_code" class="detail-item access-code">
-            <i class="fas fa-key"></i>
-            <span>Code d'accès: </span>
-            <code class="access-code-value">{{ event.access_code }}</code>
-            <button 
-              class="copy-btn" 
-              (click)="copyAccessCode(event)"
-              title="Copier le code">
-              <i class="fas fa-copy"></i>
+          <div class="event-header-actions">
+            <!-- Badge de statut -->
+            <div class="event-status">
+              <span class="status-badge" [class]="'status-' + event.status">
+                <i class="fas" [class]="getEventStatusIcon(event)"></i>
+                {{ getEventStatusText(event) }}
+              </span>
+            </div>
+            
+            <!-- ✅ NOUVEAU: Bouton suppression (Owner seulement) -->
+            <button *ngIf="isGuildOwner" 
+                    class="delete-event-btn"
+                    (click)="deleteEvent(event)"
+                    [disabled]="deletingEvents.has(event.id)"
+                    [class.deleting]="deletingEvents.has(event.id)"
+                    title="Supprimer cet événement">
+              
+              <!-- Spinner de suppression -->
+              <div *ngIf="deletingEvents.has(event.id)" class="delete-spinner"></div>
+              
+              <!-- Croix normale -->
+              <i *ngIf="!deletingEvents.has(event.id)" class="fas fa-times"></i>
             </button>
           </div>
         </div>
 
-        <!-- Statut participation utilisateur -->
-        <div class="user-participation">
+        <!-- Détails -->
+        <div class="event-details">
+          <div class="detail-item">
+            <i class="fas fa-calendar"></i>
+            <span>{{ event.start_time | date:'dd/MM/yyyy HH:mm' }} - {{ event.end_time | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="detail-item">
+            <i class="fas fa-coins"></i>
+            <span>{{ event.dkp_reward }} DKP</span>
+          </div>
+          <div class="detail-item">
+            <i class="fas fa-users"></i>
+            <span>{{ event.participant_count }} participants ({{ event.confirmed_count }} confirmés)</span>
+          </div>
+          <div class="detail-item">
+            <i class="fas fa-user-check"></i>
+            <span>Créé par {{ event.created_by }}</span>
+          </div>
+        </div>
+
+        <!-- ✅ Code d'accès OWNER (toujours visible si owner) -->
+        <div *ngIf="isGuildOwner && event.access_code" class="access-code-section owner-section">
+          <div class="access-code-header">
+            <i class="fas fa-key mr-2"></i>
+            <span>Code d'accès pour validation</span>
+          </div>
+          <div class="access-code-container">
+            <div class="access-code-display">
+              <span class="access-code-text">{{ event.access_code }}</span>
+              <button class="copy-code-btn" (click)="copyAccessCode(event)" title="Copier le code">
+                <i class="fas fa-copy"></i>
+              </button>
+            </div>
+            <p class="access-code-info">
+              <i class="fas fa-info-circle mr-1"></i>
+              Donnez ce code aux participants pour qu'ils valident leur présence
+            </p>
+          </div>
+        </div>
+
+        <!-- ✅ NOUVEAU: Actions de participation -->
+        <div class="participation-section">
+          
+          <!-- Statut de participation actuel -->
           <div class="participation-status">
-            <i class="fas" [class]="getUserParticipationIcon(event)"></i>
-            <span>{{ getUserParticipationText(event) }}</span>
-            <span *ngIf="(event.user_participation?.dkp_earned ?? 0) > 0" 
-                  class="dkp-earned">
-              (+{{ event.user_participation?.dkp_earned ?? 0 }} DKP)
-            </span>
+            <div class="status-indicator" [class]="'status-' + getUserParticipationStatus(event)">
+              <i class="fas" [class]="getUserParticipationIcon(event)"></i>
+              <span>{{ getUserParticipationText(event) }}</span>
+            </div>
+          </div>
+
+          <!-- Actions disponibles selon le statut -->
+          <div class="participation-actions">
+            
+            <!-- Pas encore inscrit -->
+            <button *ngIf="getUserParticipationStatus(event) === 'not_participating' && event.status !== 'finished'"
+                    class="participate-btn"
+                    (click)="participateInEvent(event)"
+                    [disabled]="isSubmitting">
+              <i class="fas fa-user-plus mr-1"></i>
+              Participer
+            </button>
+
+            <!-- Inscrit mais pas confirmé -->
+            <button *ngIf="getUserParticipationStatus(event) === 'interested' && event.status !== 'finished'"
+                    class="confirm-btn"
+                    (click)="confirmParticipation(event)"
+                    [disabled]="isSubmitting">
+              <i class="fas fa-check mr-1"></i>
+              Confirmer ma venue
+            </button>
+
+            <!-- Confirmé mais pas encore validé -->
+            <div *ngIf="getUserParticipationStatus(event) === 'confirmed'" class="confirmed-status">
+              <span class="confirmed-text">
+                <i class="fas fa-check-circle mr-1"></i>
+                Venue confirmée
+              </span>
+            </div>
+
+            <!-- Déjà présent -->
+            <div *ngIf="getUserParticipationStatus(event) === 'attended'" class="attended-status">
+              <span class="attended-text">
+                <i class="fas fa-medal mr-1"></i>
+                Présence validée (+{{ event.user_participation?.dkp_earned || event.dkp_reward }} DKP)
+              </span>
+            </div>
+
           </div>
         </div>
 
-        <!-- Actions de l'événement -->
-        <div class="event-actions">
-          <!-- S'inscrire -->
-          <button 
-            *ngIf="getUserParticipationStatus(event) === 'not_participating' && event.status !== 'finished'"
-            class="btn-action btn-participate"
-            (click)="participateInEvent(event)">
-            <i class="fas fa-user-plus mr-2"></i>
-            S'inscrire
-          </button>
-
-          <!-- Confirmer venue -->
-          <button 
-            *ngIf="getUserParticipationStatus(event) === 'interested' && event.status !== 'finished'"
-            class="btn-action btn-confirm"
-            (click)="confirmParticipation(event)">
-            <i class="fas fa-check mr-2"></i>
-            Confirmer ma venue
-          </button>
-
-          <!-- Valider présence -->
-          <button 
-            *ngIf="getUserParticipationStatus(event) === 'confirmed' && (event.status === 'ongoing' || event.status === 'finished')"
-            class="btn-action btn-validate"
-            (click)="openValidationModal(event)">
+        <!-- ✅ Champ validation avec vérification temporelle -->
+        <div *ngIf="getUserParticipationStatus(event) === 'confirmed' && 
+                   (event.status === 'ongoing' || event.status === 'finished')" 
+             class="validation-section">
+          <div class="validation-header">
             <i class="fas fa-medal mr-2"></i>
-            Valider ma présence
-          </button>
+            <span>Valider ma présence avec le code</span>
+          </div>
+          
+          <div class="validation-input-group">
+            <input 
+              type="text" 
+              class="validation-code-input"
+              [class.disabled-input]="!canValidateAttendance(event)"
+              placeholder="Entrez le code donné par l'organisateur"
+              [(ngModel)]="eventValidationCodes[event.id]"
+              maxlength="8"
+              (keyup.enter)="validateEventAttendance(event)"
+              [disabled]="validatingEvents.has(event.id) || !canValidateAttendance(event)">
+            
+            <button 
+              class="validate-btn"
+              (click)="validateEventAttendance(event)"
+              [class.loading]="validatingEvents.has(event.id)"
+              [class.expired]="!canValidateAttendance(event)"
+              [disabled]="!eventValidationCodes[event.id] || validatingEvents.has(event.id) || !canValidateAttendance(event)">
+              
+              <!-- Spinner de chargement -->
+              <div *ngIf="validatingEvents.has(event.id)" class="validation-spinner"></div>
+              
+              <!-- État expiré -->
+              <span *ngIf="!validatingEvents.has(event.id) && !canValidateAttendance(event)">
+                <i class="fas fa-clock mr-1"></i>
+                Validation expirée
+              </span>
+              
+              <!-- État normal -->
+              <span *ngIf="!validatingEvents.has(event.id) && canValidateAttendance(event)">
+                <i class="fas fa-check mr-1"></i>
+                Valider présence ({{ event.dkp_reward }} DKP)
+              </span>
+            </button>
+          </div>
+          
+          <p class="validation-info" [class.expired-info]="!canValidateAttendance(event)">
+            <i class="fas" [class]="canValidateAttendance(event) ? 'fa-gift' : 'fa-clock'" mr-1></i>
+            {{ getValidationMessage(event) }}
+          </p>
+        </div>
 
-          <!-- Déjà validé -->
-          <div 
-            *ngIf="getUserParticipationStatus(event) === 'attended'"
-            class="participation-validated">
-            <i class="fas fa-medal mr-2"></i>
-            Présence validée
+        <!-- ✅ Message d'information selon le statut et l'événement -->
+        <div class="event-info-message">
+          <!-- Si pas encore inscrit -->
+          <div *ngIf="getUserParticipationStatus(event) === 'not_participating'" class="info-message info-neutral">
+            <i class="fas fa-info-circle mr-2"></i>
+            <span>Inscrivez-vous pour participer à cet événement</span>
+          </div>
+
+          <!-- Si inscrit mais pas confirmé -->
+          <div *ngIf="getUserParticipationStatus(event) === 'interested'" class="info-message info-warning">
+            <i class="fas fa-clock mr-2"></i>
+            <span>Confirmez votre venue pour pouvoir valider votre présence lors de l'événement</span>
+          </div>
+
+          <!-- Si confirmé mais événement pas encore commencé -->
+          <div *ngIf="getUserParticipationStatus(event) === 'confirmed' && event.status === 'upcoming'" class="info-message info-success">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span>Venue confirmée ! Le champ de validation apparaîtra quand l'événement commencera</span>
+          </div>
+
+          <!-- Si présence déjà validée -->
+          <div *ngIf="getUserParticipationStatus(event) === 'attended'" class="info-message info-gold">
+            <i class="fas fa-trophy mr-2"></i>
+            <span>Présence validée ! Vous avez reçu {{ event.user_participation?.dkp_earned || event.dkp_reward }} DKP</span>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
-</div>
 
-<!-- Modal validation présence -->
-<div *ngIf="showValidationModal" class="modal-overlay" (click)="closeValidationModal()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>🎯 Valider ma présence</h3>
-      <button class="close-btn" (click)="closeValidationModal()">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
+      </div> <!-- Fin event-card -->
+      
+    </div> <!-- Fin events-list -->
     
-    <div class="modal-body">
-      <p *ngIf="selectedEvent">
-        Entrez le code d'accès fourni par l'organisateur de l'événement 
-        <strong>"{{ selectedEvent.name }}"</strong> pour valider votre présence et recevoir vos DKP.
-      </p>
-      
-      <div class="form-group">
-        <label for="validation-code">Code d'accès</label>
-        <input 
-          type="text" 
-          id="validation-code"
-          class="form-input"
-          [(ngModel)]="validationForm.code"
-          placeholder="Entrez le code..."
-          maxlength="8"
-          style="text-transform: uppercase;">
-      </div>
-      
-      <div *ngIf="errorMessage" class="alert alert-error">
-        <i class="fas fa-exclamation-triangle mr-2"></i>
-        {{ errorMessage }}
+    <!-- Message si pas d'événements -->
+    <div *ngIf="events.length === 0 && !isLoadingEvents" class="no-events">
+      <div class="no-events-card">
+        <div class="no-events-icon">
+          <i class="fas fa-calendar-times"></i>
+        </div>
+        <h3>Aucun événement</h3>
+        <p>Il n'y a pas encore d'événements dans votre guilde.</p>
+        <button *ngIf="isGuildOwner" class="create-first-event-btn" (click)="showCreateEventForm()">
+          <i class="fas fa-plus mr-2"></i>
+          Créer le premier événement
+        </button>
       </div>
     </div>
     
-    <div class="modal-actions">
-      <button 
-        type="button" 
-        class="btn-secondary" 
-        (click)="closeValidationModal()"
-        [disabled]="isSubmitting">
-        Annuler
-      </button>
-      
-      <button 
-        type="button" 
-        class="btn-primary"
-        (click)="validateAttendance()"
-        [disabled]="isSubmitting || !validationForm.code.trim()">
-        <i *ngIf="isSubmitting" class="fas fa-spinner fa-spin mr-2"></i>
-        <i *ngIf="!isSubmitting" class="fas fa-check mr-2"></i>
-        {{ isSubmitting ? 'Validation...' : 'Valider' }}
-      </button>
-    </div>
   </div>
 </div>
 
@@ -340,7 +381,7 @@
     <div>
       <button class="create-guild-btn" (click)="goToDashboard()">
         <i class="fas fa-arrow-left mr-2"></i>
-        Retour au tableau de bord
+        Retour au Dashboard
       </button>
     </div>
   </div>
