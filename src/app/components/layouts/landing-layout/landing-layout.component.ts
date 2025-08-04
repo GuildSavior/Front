@@ -28,10 +28,10 @@ export class LandingLayoutComponent implements OnInit {
   // ✅ Vérifier l'authentification
   checkAuthStatus() {
     this.authService.checkAuthStatus().subscribe({
-      next: (user) => {
-        if (user) {
+      next: (repsonse) => {
+        if (repsonse) {
           this.isAuthenticated = true;
-          this.user = user;
+          this.user = repsonse.user;
           this.avatarError = false;
           console.log('✅ Utilisateur connecté dans navbar:', this.user);
         } else {
@@ -76,6 +76,22 @@ export class LandingLayoutComponent implements OnInit {
 
   goToProfile() {
     this.router.navigate(['/profile']);
+    this.showDropdown = false;
+  }
+  goToGuild() {
+    this.router.navigate(['/guild']);
+    this.showDropdown = false;
+  }
+  goToMembers() {
+    this.router.navigate(['/members']);
+    this.showDropdown = false;
+  }
+  goToAuctions() {
+    this.router.navigate(['/auctions']);
+    this.showDropdown = false;
+  }
+  goToEvents() {
+    this.router.navigate(['/events']);
     this.showDropdown = false;
   }
 

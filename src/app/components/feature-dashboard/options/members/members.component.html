@@ -13,16 +13,22 @@
     <p>Chargement des membres...</p>
   </div>
 
-  <!-- Error -->
-  <div *ngIf="errorMessage && !isLoading" class="error-section">
-    <div class="error-card">
-      <i class="fas fa-exclamation-triangle"></i>
-      <h3>Erreur</h3>
+  <!-- ✅ REMPLACER la section Error par le même style que no-guild -->
+  <div *ngIf="errorMessage && !isLoading" class="no-guild">
+    <div class="no-guild-card">
+      <div class="no-guild-icon">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <h2>Impossible de charger les membres</h2>
       <p>{{ errorMessage }}</p>
-      <button class="retry-btn" (click)="loadGuildMembers()">
-        <i class="fas fa-refresh"></i>
-        Réessayer
-      </button>
+      
+      <!-- ✅ Bouton retry avec le même style -->
+      <div>
+        <button class="create-guild-btn" (click)="loadGuildMembers()">
+          <i class="fas fa-refresh mr-2"></i>
+          Réessayer
+        </button>
+      </div>
     </div>
   </div>
 
@@ -143,13 +149,23 @@
         </tbody>
       </table>
       
-      <!-- Empty State -->
-      <div *ngIf="members.length === 0" class="empty-members">
-        <div class="empty-icon">
-          <i class="fas fa-users-slash"></i>
+      <!-- ✅ AMÉLIORER aussi l'Empty State avec le même style -->
+      <div *ngIf="members.length === 0" class="no-guild">
+        <div class="no-guild-card">
+          <div class="no-guild-icon">
+            <i class="fas fa-users-slash"></i>
+          </div>
+          <h2>Aucun membre trouvé</h2>
+          <p>Il n'y a aucun membre dans cette guilde pour le moment.</p>
+          
+          <!-- ✅ Bouton pour rafraîchir -->
+          <div>
+            <button class="create-guild-btn" (click)="loadGuildMembers()">
+              <i class="fas fa-refresh mr-2"></i>
+              Actualiser
+            </button>
+          </div>
         </div>
-        <h3>Aucun membre trouvé</h3>
-        <p>Il n'y a aucun membre dans cette guilde.</p>
       </div>
     </div>
   </div>
