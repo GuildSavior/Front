@@ -13,6 +13,7 @@ import { LandingLayoutComponent } from './components/layouts/landing-layout/land
 import { LandingPageComponent } from './components/landing-features/landing/landing-page.component';
 import { MembersComponent } from './components/feature-dashboard/options/members/members.component';
 import { JoinGuildComponent } from './components/join-guild/join-guild.component';
+import { EventsComponent } from './components/feature-dashboard/options/events/events.component';
 
 export const routes: Routes = [
   // Routes sans layout
@@ -40,6 +41,7 @@ export const routes: Routes = [
       { path: 'profile', component: DashboardComponent },
       { path: 'guild', component: GuildComponent },
       { path: 'members', component: MembersComponent },
+      { path: 'events', component: EventsComponent },
       { path: 'join-guild/:code', component: JoinGuildComponent }
     ]
   },

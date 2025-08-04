@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { DiscordAuthService } from '../../../services/discordAuth/discord-auth.service';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../../../environments/environment'; 
 
 @Component({
   selector: 'app-plan-showcase',
@@ -19,7 +20,7 @@ export class PlanShowcaseComponent implements OnInit {
     // Si on revient du login Discord avec l'intention d'acheter le premium
     if (localStorage.getItem('pendingPremium') === '1') {
       console.log('Intention d\'achat détectée, vérification auth...');
-      localStorage.removeItem('pendingPremium'); // ENLÈVE LE FLAG IMMÉDIATEMENT
+      localStorage.removeItem('pendingPremium');
       
       const token = this.getCookie('auth_token');
       
@@ -32,15 +33,14 @@ export class PlanShowcaseComponent implements OnInit {
         'Authorization': `Bearer ${token}`
       });
       
-      // Vérifie si l'utilisateur est connecté AVANT de relancer l'achat
-      this.http.get('http://82.112.255.241:8080/api/user', { headers }).subscribe({
+      // ✅ CORRIGER: Utiliser environment.apiUrl
+      this.http.get(`${environment.apiUrl}/user`, { headers }).subscribe({
         next: (user) => {
           console.log('Utilisateur connecté après login Discord, lancement Stripe...');
-          this.launchStripe(headers); // Passe les headers à launchStripe
+          this.launchStripe(headers);
         },
         error: () => {
           console.log('Utilisateur pas encore connecté après Discord, on attend...');
-          // Ne pas remettre le flag pour éviter la boucle
         }
       });
     }
@@ -75,6 +75,7 @@ export class PlanShowcaseComponent implements OnInit {
     this.launchStripe(headers);
   }
 
+  // ✅ CORRIGER: launchStripe avec environment
   private launchStripe(headers?: HttpHeaders) {
     this.isLoading = true;
     
@@ -91,15 +92,20 @@ export class PlanShowcaseComponent implements OnInit {
       });
     }
     
-    this.http.post<{ url: string }>('http://82.112.255.241:8080/api/stripe/create-checkout-session', {}, { headers })
-      .subscribe({
-        next: (res) => {
-          window.location.href = res.url;
-        },
-        error: () => {
-          this.isLoading = false;
-          alert('Erreur lors de la création de la session Stripe.');
-        }
-      });
+    // ✅ CORRIGER: Utiliser environment.apiUrl au lieu de l'IP en dur
+    this.http.post<{ url: string }>(`${environment.apiUrl}/stripe/create-checkout-session`, {}, { 
+      headers,
+      withCredentials: true // ✅ Ajouter aussi withCredentials pour la cohérence
+    }).subscribe({
+      next: (res) => {
+        console.log('✅ Session Stripe créée:', res);
+        window.location.href = res.url;
+      },
+      error: (error) => {
+        console.error('❌ Erreur Stripe:', error);
+        this.isLoading = false;
+        alert('Erreur lors de la création de la session Stripe.');
+      }
+    });
   }
 }

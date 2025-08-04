@@ -9,6 +9,7 @@ import { User } from '../../models/user.model';
 import { Guild } from '../../models/guild.model';
 import { GuildInvitationService } from '../../services/invitations/guild-invitation.service';
 import { environment } from '../../../environments/environment';
+import { HttpHeaders, HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-guild',
@@ -23,6 +24,7 @@ export class GuildComponent implements OnInit {
   private planService = inject(PlanService);
   private invitationService = inject(GuildInvitationService);
   private router = inject(Router);
+  private http = inject(HttpClient);
 
   // ✅ Exposer l'environnement pour le template
   environment = environment;
@@ -35,6 +37,7 @@ export class GuildComponent implements OnInit {
   isSubmitting = false;
   errorMessage = '';
   successMessage = '';
+  isUpgrading = false; // ✅ Ajouter cette propriété
 
   // ✅ Propriété pour la date actuelle
   currentDate = new Date().toLocaleDateString('fr-FR');
@@ -727,5 +730,77 @@ export class GuildComponent implements OnInit {
         setTimeout(() => this.errorMessage = '', 4000);
       }
     });
+  }
+
+  // ✅ AJOUTER dans guild.component.ts
+  upgradeToPremium() {
+    console.log("Lancement de l'achat premium depuis la page guilde");
+    
+    this.isUpgrading = true;
+    
+    const token = this.getCookie('auth_token');
+    
+    if (!token) {
+      console.warn('Utilisateur non connecté, redirection vers Discord');
+      localStorage.setItem('pendingPremium', '1');
+      
+      // ✅ Option 1: Si tu as accès au service Discord
+      // this.discordAuth.loginWithDiscord();
+      
+      // ✅ Option 2: Redirection vers la page d'accueil
+      this.router.navigate(['/home']);
+      
+      this.isUpgrading = false;
+      return;
+    }
+
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+
+    console.log("Utilisateur connecté, lancement de Stripe");
+    this.launchStripe(headers);
+  }
+
+  // ✅ AJOUTER cette méthode dans guild.component.ts
+  private launchStripe(headers: HttpHeaders) {
+    // ✅ Utiliser environment.apiUrl
+    this.http.post<{ url: string }>(`${environment.apiUrl}/stripe/create-checkout-session`, {}, { 
+      headers,
+      withCredentials: true
+    }).subscribe({
+      next: (response) => {
+        if (response.url) {
+          console.log('✅ Session Stripe créée, redirection...');
+          
+          // ✅ Optionnel: Message de feedback
+          this.successMessage = '🚀 Redirection vers le paiement sécurisé...';
+          
+          // Redirection vers Stripe
+          window.location.href = response.url;
+        } else {
+          console.error('❌ Pas d\'URL de redirection dans la réponse Stripe');
+          this.errorMessage = 'Erreur lors de la création de la session de paiement.';
+          this.isUpgrading = false;
+        }
+      },
+      error: (error) => {
+        console.error('❌ Erreur Stripe:', error);
+        this.errorMessage = 'Erreur lors de la connexion au service de paiement.';
+        this.isUpgrading = false;
+        
+        setTimeout(() => this.errorMessage = '', 4000);
+      }
+    });
+  }
+
+  // ✅ AJOUTER getCookie si pas déjà fait
+  private getCookie(name: string): string | null {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) {
+      return parts.pop()?.split(';').shift() || null;
+    }
+    return null;
   }
 }
