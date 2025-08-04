@@ -1,25 +1,29 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment'; // ✅ Importer l'environnement
-import { AuthService } from '../auth.service';
+import { Observable, throwError } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GuildInvitationService {
   private http = inject(HttpClient);
-  private authService = inject(AuthService);
-  private apiUrl = environment.apiUrl; // ✅ URL dynamique
+  private apiUrl = environment.apiUrl;
 
   constructor() {
-    // ✅ Log en développement
     if (environment.enableDebugLogs) {
-      console.log('🔧 GuildInvitationService - API URL:', this.apiUrl);
+      console.log('🔧 GuildInvitationService initialisé');
+      console.log('🔧 API URL:', this.apiUrl);
     }
   }
 
-  // ✅ Récupérer le token comme dans tes autres services
+  private debugLog(message: string, data?: any) {
+    if (environment.enableDebugLogs) {
+      console.log(`🔧 GuildInvitationService: ${message}`, data || '');
+    }
+  }
+
   private getCookie(name: string): string | null {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
@@ -30,55 +34,129 @@ export class GuildInvitationService {
   }
 
   private getAuthHeaders(): HttpHeaders {
-    const token = this.getCookie('auth_token') || '';
+    const token = this.getCookie('auth_token');
+    
+    if (environment.enableDebugLogs && !token) {
+      console.warn('🔧 GuildInvitationService: Aucun token d\'authentification trouvé');
+    }
+    
     return new HttpHeaders({
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
     });
   }
 
-  // ✅ Créer une invitation
-  createInvitation(maxUses?: number, expiresInHours?: number): Observable<any> {
-    const data: any = {};
-    if (maxUses) data.max_uses = maxUses;
-    if (expiresInHours) data.expires_in_hours = expiresInHours;
-
-    return this.http.post(`${this.apiUrl}/invitations`, data, { 
-      headers: this.getAuthHeaders() 
-    });
-  }
-
-  // ✅ Récupérer mes invitations
-  getMyInvitations(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/invitations`, { 
-      headers: this.getAuthHeaders() 
-    });
-  }
-
-  // ✅ Rejoindre via invitation
-  joinViaInvitation(code: string): Observable<any> {
-    return this.http.get(`http://82.112.255.241:8080/api/invite/${code}`, { 
-      headers: this.getAuthHeaders() 
-    });
-  }
-
-  // ✅ Désactiver invitation
-  deactivateInvitation(invitationId: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/invitations/${invitationId}`, { 
-      headers: this.getAuthHeaders() 
-    });
-  }
-  // Dans guild-invitation.service.ts
-  joinGuild(code: string): Observable<any> {
-    const url = `${this.apiUrl}/invitations/${code}/join`;
+  // ✅ CORRIGER: Créer une invitation (POST /api/guilds/invitations)
+  createInvitation(invitationData: any): Observable<any> {
+    const url = `${this.apiUrl}/guilds/invitations`;
+    this.debugLog('Création invitation', { url, data: invitationData });
     
-    if (environment.enableDebugLogs) {
-      console.log('🔧 Appel API joinGuild:', url);
-    }
-    
-    return this.http.post(url, {}, {
-      headers: this.authService.getAuthHeaders(),
+    return this.http.post(url, invitationData, { 
+      headers: this.getAuthHeaders(),
       withCredentials: true
-    });
+    }).pipe(
+      tap((response) => {
+        this.debugLog('✅ Invitation créée', response);
+      }),
+      catchError((error) => {
+        this.debugLog('❌ Erreur création invitation', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // ✅ CORRIGER: Récupérer mes invitations (GET /api/guilds/invitations)
+  getMyInvitations(): Observable<any> {
+    const url = `${this.apiUrl}/guilds/invitations`;
+    this.debugLog('Récupération invitations', url);
+    
+    return this.http.get(url, { 
+      headers: this.getAuthHeaders(),
+      withCredentials: true
+    }).pipe(
+      tap((response) => {
+        this.debugLog('✅ Invitations récupérées', response);
+      }),
+      catchError((error) => {
+        this.debugLog('❌ Erreur récupération invitations', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // ✅ CORRIGER: Rejoindre via invitation (GET /api/invite/{code})
+  joinViaInvitation(code: string): Observable<any> {
+    const url = `${this.apiUrl}/invite/${code}`;
+    this.debugLog('Rejoindre via invitation', { url, code });
+    
+    return this.http.get(url, { 
+      headers: this.getAuthHeaders(),
+      withCredentials: true
+    }).pipe(
+      tap((response) => {
+        this.debugLog('✅ Guilde rejointe via invitation', response);
+      }),
+      catchError((error) => {
+        this.debugLog('❌ Erreur rejoindre via invitation', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // ✅ CORRIGER: Désactiver invitation (DELETE /api/guilds/invitations/{invitation})
+  deactivateInvitation(invitationId: number): Observable<any> {
+    const url = `${this.apiUrl}/guilds/invitations/${invitationId}`;
+    this.debugLog('Désactivation invitation', { url, invitationId });
+    
+    return this.http.delete(url, { 
+      headers: this.getAuthHeaders(),
+      withCredentials: true
+    }).pipe(
+      tap((response) => {
+        this.debugLog('✅ Invitation désactivée', response);
+      }),
+      catchError((error) => {
+        this.debugLog('❌ Erreur désactivation invitation', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // ✅ NOUVELLE méthode pour suppression définitive
+  deleteInvitation(invitationId: number): Observable<any> {
+    const url = `${this.apiUrl}/guilds/invitations/${invitationId}/delete`;
+    this.debugLog('Suppression définitive invitation', { url, invitationId });
+    
+    return this.http.delete(url, { 
+      headers: this.getAuthHeaders(),
+      withCredentials: true
+    }).pipe(
+      tap((response) => {
+        this.debugLog('✅ Invitation supprimée définitivement', response);
+      }),
+      catchError((error) => {
+        this.debugLog('❌ Erreur suppression définitive invitation', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // ✅ NOUVELLE méthode pour nettoyer toutes les invitations inactives
+  cleanupInactiveInvitations(): Observable<any> {
+    const url = `${this.apiUrl}/guilds/invitations/cleanup-inactive`;
+    this.debugLog('Nettoyage invitations inactives', url);
+    
+    return this.http.delete(url, { 
+      headers: this.getAuthHeaders(),
+      withCredentials: true
+    }).pipe(
+      tap((response) => {
+        this.debugLog('✅ Invitations inactives nettoyées', response);
+      }),
+      catchError((error) => {
+        this.debugLog('❌ Erreur nettoyage invitations inactives', error);
+        return throwError(() => error);
+      })
+    );
   }
 }

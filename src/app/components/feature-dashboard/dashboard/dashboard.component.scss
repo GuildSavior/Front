@@ -84,8 +84,19 @@ select {
   padding: 0.4rem 1rem;
   border-radius: 6px;
   border: none;
-  background: #2a2a5a;
-  color: #fff;
+  background: #2a2a5a !important; // ✅ Background plus foncé
+  color: #fff !important;          // ✅ Texte blanc
+  
+  // ✅ Styles pour les options
+  option {
+    background: #1a1a3a !important; // ✅ Background encore plus foncé
+    color: #ffffff !important;       // ✅ Texte blanc
+    padding: 8px 12px;
+    
+    &:hover {
+      background: var(--main-purple-for-button-and-text) !important;
+    }
+  }
 }
 
 .user-actions {
@@ -369,6 +380,44 @@ select {
     
     &::placeholder {
       color: #888;
+    }
+  }
+  
+  // ✅ AJOUTER des styles spécifiques pour le select et ses options
+  .form-select {
+    cursor: pointer;
+    
+    // ✅ Styles pour les options du menu déroulant
+    option {
+      background: #2a2a5a !important; // Background sombre pour les options
+      color: #ffffff !important;      // Texte blanc
+      padding: 0.5rem;
+      border: none;
+      
+      // ✅ Style au survol (peut ne pas fonctionner sur tous les navigateurs)
+      &:hover {
+        background: var(--main-purple-for-button-and-text) !important;
+      }
+      
+      // ✅ Style pour l'option sélectionnée
+      &:checked {
+        background: var(--main-purple-for-button-and-text) !important;
+        color: #ffffff !important;
+      }
+    }
+    
+    // ✅ Pour WebKit (Chrome, Safari)
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: #2a2a5a;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: var(--main-purple-for-button-and-text);
+      border-radius: 4px;
     }
   }
 }

@@ -7,10 +7,6 @@
         <i class="fas fa-shield-alt mr-3"></i>
         Ma Guilde
       </h1>
-      <button class="back-btn" (click)="goToDashboard()">
-        <i class="fas fa-arrow-left mr-2"></i>
-        Retour au Dashboard
-      </button>
     </div>
   </div>
 
@@ -141,42 +137,84 @@
       </div>
 
       <div class="guild-actions">
-        <button class="action-btn">
+        <button 
+          class="action-btn" 
+          (click)="toggleInvitations()"
+          [disabled]="!isGuildOwner">
           <i class="fas fa-user-plus mr-2"></i>
-          Inviter des membres
+          <span *ngIf="!showInvitations">Inviter des membres</span>
+          <span *ngIf="showInvitations">Masquer les invitations</span>
         </button>
-        <button class="action-btn">
+        
+        <button 
+          class="action-btn" 
+          (click)="showGuildSettings()"
+          [disabled]="!isGuildOwner">
           <i class="fas fa-cog mr-2"></i>
           Paramètres
         </button>
+
+        <!-- ✅ BOUTON pour quitter la guilde (membres) -->
+        <button 
+          class="action-btn danger-btn" 
+          (click)="leaveGuild()"
+          [disabled]="isSubmitting || isGuildOwner"
+          *ngIf="guild && !isGuildOwner">
+          <i class="fas fa-sign-out-alt mr-2"></i>
+          <span *ngIf="!isSubmitting">Quitter la guilde</span>
+          <span *ngIf="isSubmitting">
+            <i class="fas fa-spinner fa-spin mr-2"></i>
+            Sortie en cours...
+          </span>
+        </button>
+
+        <!-- ✅ NOUVEAU BOUTON pour dissoudre la guilde (propriétaire uniquement) -->
+        <button 
+          class="action-btn disband-btn" 
+          (click)="disbandGuild()"
+          [disabled]="isSubmitting || !isGuildOwner"
+          *ngIf="guild && isGuildOwner">
+          <i class="fas fa-skull-crossbones mr-2"></i>
+          <span *ngIf="!isSubmitting">Dissoudre la guilde</span>
+          <span *ngIf="isSubmitting">
+            <i class="fas fa-spinner fa-spin mr-2"></i>
+            Dissolution en cours...
+          </span>
+        </button>
+      </div>
+
+      <!-- ✅ DÉPLACER et AMÉLIORER le message propriétaire pour le rendre plus visible -->
+      <div *ngIf="guild && isGuildOwner" class="owner-badge">
+        <div class="owner-content">
+          <i class="fas fa-crown"></i>
+          <span class="owner-text">Vous êtes le propriétaire de cette guilde</span>
+          <div class="owner-shine"></div>
+        </div>
       </div>
     </div>
 
     <!-- ✅ AJOUTER cette section dans ton template existant, après les infos de guilde -->
 
     <!-- Section Invitations (seulement pour le propriétaire) -->
-    <div class="guild-invitations" *ngIf="guild && isGuildOwner">
-      <div class="guild-card mt-4">
-        <div class="guild-header-info">
-          <div class="guild-icon">
+    <div class="guild-invitations" *ngIf="guild && isGuildOwner && showInvitations">
+      <div class="invitation-card">
+        <div class="invitation-header">
+          <div class="header-content">
             <i class="fas fa-link"></i>
+            <h3>🔗 Gestion des invitations</h3>
           </div>
-          <div class="guild-details">
-            <h2>🔗 Invitations de guilde</h2>
-            <button 
-              (click)="toggleInvitations()" 
-              class="action-btn">
-              {{ showInvitations ? 'Masquer' : 'Afficher' }} les invitations
-            </button>
-          </div>
+          <button 
+            (click)="toggleInvitations()" 
+            class="close-btn">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
         
-        <div class="guild-content" *ngIf="showInvitations">
-          
-          <!-- Formulaire création invitation -->
-          <div class="create-invitation-section">
-            <h3>📝 Créer une nouvelle invitation</h3>
-            <div class="invitation-form">
+        <!-- Formulaire création invitation -->
+        <div class="create-invitation-section">
+          <h4>📝 Créer une nouvelle invitation</h4>
+          <div class="invitation-form">
+            <div class="form-row">
               <div class="form-group">
                 <label>Nombre max d'utilisations</label>
                 <input 
@@ -184,7 +222,8 @@
                   [(ngModel)]="invitationForm.maxUses"
                   placeholder="Illimité"
                   min="1" 
-                  max="100">
+                  max="100"
+                  class="form-input">
               </div>
               <div class="form-group">
                 <label>Expire dans (heures)</label>
@@ -193,103 +232,165 @@
                   [(ngModel)]="invitationForm.expiresInHours"
                   placeholder="Jamais"
                   min="1" 
-                  max="168">
+                  max="168"
+                  class="form-input">
               </div>
               <div class="form-group">
                 <button 
                   (click)="createInvitation()" 
-                  class="submit-btn"
+                  class="create-btn"
                   [disabled]="isCreatingInvitation">
-                  <i *ngIf="isCreatingInvitation" class="fas fa-spinner fa-spin mr-2"></i>
-                  <i *ngIf="!isCreatingInvitation" class="fas fa-plus mr-2"></i>
-                  {{ isCreatingInvitation ? 'Création...' : 'Créer invitation' }}
+                  <i *ngIf="isCreatingInvitation" class="fas fa-spinner fa-spin"></i>
+                  <i *ngIf="!isCreatingInvitation" class="fas fa-plus"></i>
+                  {{ isCreatingInvitation ? 'Création...' : 'Créer' }}
                 </button>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Loading invitations -->
-          <div *ngIf="isLoadingInvitations" class="loading-section">
-            <div class="loading-spinner"></div>
-            <p>Chargement des invitations...</p>
+        <!-- Loading invitations -->
+        <div *ngIf="isLoadingInvitations" class="loading-section">
+          <div class="loading-spinner"></div>
+          <p>Chargement des invitations...</p>
+        </div>
+
+        <!-- Liste des invitations -->
+        <div class="invitations-list" *ngIf="!isLoadingInvitations">
+          <div class="list-header">
+            <h4>📋 Invitations actives ({{ invitations.length }})</h4>
+            
+            <!-- ✅ Bouton de nettoyage global si il y a des invitations inactives -->
+            <div class="header-actions" *ngIf="getInactiveInvitationsCount() > 0">
+              <button 
+                (click)="cleanupInactiveInvitations()" 
+                class="cleanup-btn"
+                title="Supprimer toutes les invitations inactives d'un coup">
+                <i class="fas fa-broom"></i>
+                Nettoyer ({{ getInactiveInvitationsCount() }})
+              </button>
+            </div>
+          </div>
+          
+          <div class="no-invitations" *ngIf="invitations.length === 0">
+            <div class="empty-state">
+              <i class="fas fa-envelope-open"></i>
+              <p>Aucune invitation créée</p>
+              <span>Créez votre première invitation pour inviter des membres !</span>
+            </div>
           </div>
 
-          <!-- Liste des invitations -->
-          <div class="invitations-list" *ngIf="!isLoadingInvitations">
-            <h3 *ngIf="invitations.length > 0">📋 Mes invitations ({{ invitations.length }})</h3>
-            
-            <div class="no-invitations" *ngIf="invitations.length === 0">
-              <div class="no-guild-icon">
-                <i class="fas fa-envelope"></i>
-              </div>
-              <p>Aucune invitation créée pour le moment.</p>
-            </div>
-
-            <div class="invitation-item" *ngFor="let invitation of invitations">
-              <div class="invitation-card">
-                
-                <!-- Info invitation -->
-                <div class="invitation-info">
-                  <div class="invitation-code">
-                    <strong>Code:</strong> 
+          <div class="invitation-item" *ngFor="let invitation of invitations; trackBy: trackByInvitationId">
+            <div class="invitation-content">
+              
+              <!-- Info principale -->
+              <div class="invitation-main">
+                <div class="invitation-code">
+                  <label>Code d'invitation</label>
+                  <div class="code-display">
                     <code>{{ invitation.code }}</code>
-                  </div>
-                  <div class="invitation-url">
-                    <label>URL d'invitation:</label>
-                    <div class="url-input-group">
-                      <input 
-                        readonly 
-                        [value]="invitation.url" 
-                        class="url-input">
-                      <button 
-                        (click)="copyToClipboard(invitation.url)" 
-                        class="copy-btn">
-                        📋 Copier
-                      </button>
-                    </div>
+                    <button 
+                      (click)="copyToClipboard(invitation.code)" 
+                      class="copy-btn-small"
+                      title="Copier le code">
+                      <i class="fas fa-copy"></i>
+                    </button>
                   </div>
                 </div>
+                
+                <div class="invitation-url">
+                  <label>Lien d'invitation</label>
+                  <div class="url-container">
+                    <input 
+                      readonly 
+                      [value]="invitation.url" 
+                      class="url-input"
+                      #urlInput>
+                    <button 
+                      (click)="copyToClipboard(invitation.url)" 
+                      class="copy-btn"
+                      title="Copier le lien">
+                      <i class="fas fa-copy"></i>
+                      Copier
+                    </button>
+                  </div>
+                </div>
+              </div>
 
-                <!-- Stats invitation -->
+              <!-- Stats et statut -->
+              <div class="invitation-meta">
                 <div class="invitation-stats">
-                  <div class="stat-item" *ngIf="invitation.max_uses">
+                  <div class="stat" *ngIf="invitation.max_uses">
                     <i class="fas fa-users"></i>
-                    <span>{{ invitation.uses_count }}/{{ invitation.max_uses }} utilisations</span>
+                    <span>{{ invitation.uses_count }}/{{ invitation.max_uses }}</span>
                   </div>
-                  <div class="stat-item" *ngIf="invitation.expires_at">
+                  <div class="stat" *ngIf="!invitation.max_uses">
+                    <i class="fas fa-infinity"></i>
+                    <span>{{ invitation.uses_count }} utilisations</span>
+                  </div>
+                  <div class="stat" *ngIf="invitation.expires_at">
                     <i class="fas fa-clock"></i>
-                    <span>Expire: {{ invitation.expires_at | date:'dd/MM/yyyy HH:mm' }}</span>
+                    <span>{{ invitation.expires_at | date:'dd/MM/yyyy HH:mm' }}</span>
                   </div>
-                  <div class="stat-item">
+                  <div class="stat">
                     <span 
                       class="status-badge"
-                      [class.valid]="invitation.is_valid"
-                      [class.invalid]="!invitation.is_valid">
-                      {{ invitation.is_valid ? '✅ Valide' : '❌ Invalide' }}
+                      [ngClass]="{
+                        'status-valid': invitation.is_valid && invitation.is_active,
+                        'status-invalid': !invitation.is_valid || !invitation.is_active
+                      }">
+                      <i class="fas" 
+                         [ngClass]="{
+                           'fa-check-circle': invitation.is_valid && invitation.is_active,
+                           'fa-times-circle': !invitation.is_valid || !invitation.is_active
+                         }"></i>
+                      {{ (invitation.is_valid && invitation.is_active) ? 'Active' : 'Inactive' }}
                     </span>
                   </div>
                 </div>
 
                 <!-- Actions -->
                 <div class="invitation-actions">
+                  <!-- Bouton désactiver pour les invitations actives -->
                   <button 
-                    *ngIf="invitation.is_active"
+                    *ngIf="invitation.is_active && invitation.is_valid"
                     (click)="deactivateInvitation(invitation.id)" 
-                    class="action-btn danger">
-                    <i class="fas fa-trash mr-2"></i>
+                    class="deactivate-btn"
+                    title="Désactiver cette invitation (elle restera mais ne fonctionnera plus)">
+                    <i class="fas fa-pause"></i>
                     Désactiver
                   </button>
-                  <span *ngIf="!invitation.is_active" class="disabled-text">
-                    Désactivée
+                  
+                  <!-- ✅ Bouton supprimer SEULEMENT pour les invitations inactives -->
+                  <button 
+                    *ngIf="!invitation.is_active || !invitation.is_valid"
+                    (click)="deleteInvitation(invitation.id)" 
+                    class="delete-btn"
+                    title="Supprimer définitivement cette invitation">
+                    <i class="fas fa-trash"></i>
+                    Supprimer
+                  </button>
+                  
+                  <!-- Texte pour les invitations désactivées -->
+                  <span *ngIf="(!invitation.is_active || !invitation.is_valid)" 
+                        class="disabled-text">
+                    <i class="fas fa-ban"></i>
+                    Invitation désactivée
                   </span>
                 </div>
-
               </div>
+
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- ✅ AJOUTER un message si pas propriétaire -->
+  <div *ngIf="guild && !isGuildOwner" class="info-message">
+    <i class="fas fa-info-circle mr-2"></i>
+    Seul le propriétaire de la guilde peut inviter des membres et gérer les paramètres.
   </div>
 </div>
 
