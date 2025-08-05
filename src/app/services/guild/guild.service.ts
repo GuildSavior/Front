@@ -88,7 +88,7 @@ export class GuildService {
       tap((response) => {
         this.debugLog('✅ Guilde actuelle récupérée', response);
       }),
-      catchError((error) => {
+      catchError((error: any) => {
         this.debugLog('❌ Erreur récupération guilde actuelle', error);
         return throwError(() => error);
       })

@@ -11,6 +11,7 @@ import { User } from '../../../models/user.model'; // ✅ CORRIGER le chemin
 import { Player, PlayerClass } from '../../../models/player.model'; // ✅ CORRIGER le chemin
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../../../environments/environment';
+import { NotificationService } from '../../../services/notification/notification.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -71,6 +72,9 @@ export class DashboardComponent implements OnInit {
   isLoading = true; // ✅ AJOUTER pour l'état de chargement
   environment: any;
 
+  // ✅ NOUVEAU: Propriété pour l'upgrade
+  isUpgrading = false;
+  private notificationService = inject(NotificationService);
   ngOnInit() {
     // ✅ Debug en développement
     if (environment.enableDebugLogs) {
@@ -247,14 +251,18 @@ export class DashboardComponent implements OnInit {
 
   savePlayerProfile() {
     if (!this.playerForm.name.trim()) {
-      this.notification = '❌ Le nom du personnage est obligatoire';
-      setTimeout(() => this.notification = null, 3000);
+      this.notificationService.error(
+        'Erreur de validation',
+        '❌ Le nom du personnage est obligatoire'
+      );
       return;
     }
 
-    if (this.playerForm.level < 1 || this.playerForm.level > 100) {
-      this.notification = '❌ Le niveau doit être entre 1 et 100';
-      setTimeout(() => this.notification = null, 3000);
+    if (this.playerForm.level < 1 || this.playerForm.level > 55) {
+      this.notificationService.error(
+        'Erreur de validation',
+        '❌ Le niveau doit être entre 1 et 55'
+      );
       return;
     }
 
@@ -267,10 +275,12 @@ export class DashboardComponent implements OnInit {
           this.hasPlayerProfile = true;
           this.isEditingPlayer = false;
           this.player.classe = this.playerForm.class;
-          
-          this.notification = `✅ ${response.message}`;
-          setTimeout(() => this.notification = null, 4000);
-          
+
+          this.notificationService.success(
+            'Profil sauvegardé',
+            `✅ ${response.message}`
+          );
+
           if (environment.enableDebugLogs) {
             console.log('✅ Profil sauvegardé:', this.currentPlayer);
           }
@@ -279,15 +289,17 @@ export class DashboardComponent implements OnInit {
       },
       error: (error) => {
         console.error('❌ Erreur sauvegarde:', error);
-        this.notification = error.error?.message || '❌ Erreur lors de la sauvegarde';
-        setTimeout(() => this.notification = null, 4000);
+        this.notificationService.error(
+          'Erreur de sauvegarde',
+          error.error?.message || '❌ Erreur lors de la sauvegarde'
+        );
         this.isSubmittingPlayer = false;
       }
     });
   }
 
   deletePlayerProfile() {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer votre profil joueur ? Cette action est irréversible.')) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer votre profil joueur ? Cette action est irréversible. VOUS PERDREZ TOUT VOS DKP !')) {
       return;
     }
 
@@ -303,14 +315,18 @@ export class DashboardComponent implements OnInit {
             class: 'dps'
           };
           this.player.classe = 'dps';
-          this.notification = '✅ Profil joueur supprimé avec succès';
-          setTimeout(() => this.notification = null, 4000);
+          this.notificationService.success(
+            'Profil supprimé',
+            '✅ Votre profil joueur a été supprimé avec succès'
+          );
         }
       },
       error: (error) => {
         console.error('❌ Erreur suppression:', error);
-        this.notification = '❌ Erreur lors de la suppression';
-        setTimeout(() => this.notification = null, 4000);
+        this.notificationService.error(
+          'Erreur de suppression',
+          error.error?.message || '❌ Erreur lors de la suppression du profil joueur'
+        );
       }
     });
   }
@@ -376,5 +392,101 @@ export class DashboardComponent implements OnInit {
     
     // ✅ Plus besoin de logoutAndRedirect(), juste logout()
     this.authService.logout();
+  }
+
+  // ✅ NOUVEAU: Méthode upgradeToPremium (identique à guild)
+  upgradeToPremium() {
+    
+    this.isUpgrading = true;
+    
+    const token = this.getCookie('auth_token');
+    
+    if (!token) {
+      console.warn('Utilisateur non connecté, redirection vers Discord');
+      localStorage.setItem('pendingPremium', '1');
+      
+      // Redirection vers la page d'accueil pour se connecter
+      this.router.navigate(['/home']);
+      
+      this.isUpgrading = false;
+      return;
+    }
+    this.launchStripe();
+  }
+
+  // ✅ NOUVEAU: Méthode pour lancer Stripe
+  private launchStripe() {
+    const token = this.getCookie('auth_token');
+    
+    const headers = {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+
+    // ✅ Utiliser fetch au lieu de HttpClient pour éviter les imports
+    fetch(`${environment.apiUrl}/stripe/create-checkout-session`, {
+      method: 'POST',
+      headers: headers,
+      credentials: 'include',
+      body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.url) {
+        this.notificationService.success(
+          'Session Stripe créée',
+          '✅ Redirection vers le paiement sécurisé...'
+        );
+
+        // Redirection vers Stripe
+        window.location.href = data.url;
+      } else {
+        console.error('❌ Pas d\'URL de redirection dans la réponse Stripe');
+        this.notificationService.error(
+          'Erreur de création de session',
+          '❌ Erreur lors de la création de la session de paiement.'
+        );
+        this.isUpgrading = false;
+      }
+    })
+    .catch(error => {
+      console.error('❌ Erreur Stripe:', error);
+      this.notificationService.error(
+        'Erreur de connexion',
+        '❌ Erreur lors de la connexion au service de paiement.'
+      );
+      this.isUpgrading = false;
+    });
+  }
+
+  // ✅ NOUVEAU: Méthode getCookie
+  private getCookie(name: string): string | null {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) {
+      return parts.pop()?.split(';').shift() || null;
+    }
+    return null;
+  }
+
+  // Méthode pour obtenir le nom d'affichage de la classe
+  getClassDisplayName(classKey: string): string {
+    const classNames: { [key: string]: string } = {
+      'tank': '🛡️ Tank',
+      'dps': '⚔️ DPS', 
+      'support': '🩹 Support',
+      'range': '🏹 Range',
+      'mage': '🔮 Mage'
+    };
+    return classNames[classKey] || classKey;
+  }
+
+  // Méthodes de navigation (à adapter selon tes routes)
+  goToEvents() {
+    this.router.navigate(['/events']);
+  }
+
+  goToSettings() {
+    this.router.navigate(['/auctions']);
   }
 }

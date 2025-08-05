@@ -10,19 +10,7 @@
     </div>
   </div>
 
-  <!-- ✅ Messages d'erreur et de succès -->
-  <div *ngIf="errorMessage" class="alert alert-error">
-    <i class="fas fa-exclamation-triangle mr-2"></i>
-    {{ errorMessage }}
-    <button *ngIf="errorMessage.includes('Premium')" (click)="goToUpgrade()" class="upgrade-btn">
-      Passer au Premium
-    </button>
-  </div>
-
-  <div *ngIf="successMessage" class="alert alert-success">
-    <i class="fas fa-check-circle mr-2"></i>
-    {{ successMessage }}
-  </div>
+  
 
   <!-- Si l'utilisateur n'a pas de guilde -->
   <div *ngIf="!guild && !isCreatingGuild" class="no-guild">
@@ -48,9 +36,19 @@
             <i class="fas fa-crown mr-2"></i>
             La création de guilde nécessite un abonnement Premium
           </p>
-          <button class="upgrade-btn" (click)="goToUpgrade()">
-            <i class="fas fa-star mr-2"></i>
-            Passer au Premium
+          
+          <!-- ✅ NOUVEAU : Même structure que le bouton logout -->
+          <button class="upgrade-btn" (click)="upgradeToPremium()" [disabled]="isUpgrading">
+            <!-- Animation de chargement -->
+            <div *ngIf="isUpgrading" class="upgrade-loading">
+              <div class="upgrade-spinner"></div>
+            </div>
+            
+            <!-- État normal -->
+            <div *ngIf="!isUpgrading" class="upgrade-content">
+              <i class="fas fa-crown upgrade-icon"></i>
+              <span class="upgrade-text">Passer au Premium</span>
+            </div>
           </button>
         </div>
       </ng-template>
@@ -120,7 +118,16 @@
           <i class="fas fa-shield-alt"></i>
         </div>
         <div class="guild-details">
-          <h2>{{ guild.name }}</h2>
+          <div class="guild-title-row">
+            <h2>{{ guild.name }}</h2>
+            <!-- ✅ NOUVEAU : Badge propriétaire déplacé ici -->
+            <div *ngIf="guild && isGuildOwner" class="owner-badge-compact">
+              <div class="owner-content">
+                <i class="fas fa-crown"></i>
+                <span class="owner-text">Propriétaire</span>
+              </div>
+            </div>
+          </div>
           <p class="guild-description">{{ guild.description || 'Aucune description' }}</p>
         </div>
       </div>
@@ -181,15 +188,6 @@
             Dissolution en cours...
           </span>
         </button>
-      </div>
-
-      <!-- ✅ DÉPLACER et AMÉLIORER le message propriétaire pour le rendre plus visible -->
-      <div *ngIf="guild && isGuildOwner" class="owner-badge">
-        <div class="owner-content">
-          <i class="fas fa-crown"></i>
-          <span class="owner-text">Vous êtes le propriétaire de cette guilde</span>
-          <div class="owner-shine"></div>
-        </div>
       </div>
     </div>
 

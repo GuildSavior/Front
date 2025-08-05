@@ -1,177 +1,389 @@
-<!-- Si user est défini, on affiche les infos -->
-<div class="dashboard" *ngIf="!isLoading && user; else loading">
-  <div class="dashboard-container">
-    <!-- Colonne Infos Utilisateur -->
-    <section class="user-info">
-      <div class="avatar-block">
-        <img [src]="user.avatar" alt="Avatar" class="avatar" />
-        <div class="user-basic">
-          <h2>{{ user.username }}</h2>
-          <button class="show-sensitive-btn" (click)="showSensitive = !showSensitive">
-            {{ showSensitive ? 'Masquer' : 'Afficher les infos sensibles' }}
-          </button>
-          <div 
-            class="sensitive-info" 
-            *ngIf="showSensitive"
-            [@fadeSlide]>
-            <p class="user-email">{{ user.email }}</p>
-            <p class="user-id">ID Discord : {{ user.discord_id }}</p>
-          </div>
+<!-- ✅ NOUVEAU DESIGN pour dashboard.component.html -->
+
+<div class="dashboard-modern" *ngIf="!isLoading && user; else loading">
+  <!-- ✅ Header du Dashboard -->
+  <header class="dashboard-header">
+    <div class="header-content">
+      <div class="user-greeting">
+        <h1>Bienvenue, <span class="username-highlight">{{ user.username }}</span></h1>
+        <p class="greeting-subtitle">Voici votre tableau de bord Guild Savior</p>
+      </div>
+      <div class="header-avatar">
+        <div class="avatar-container">
+          <img [src]="user.avatar" alt="Avatar" class="avatar-image" />
+          <div class="avatar-status" [ngClass]="isPremium() ? 'status-premium' : 'status-free'"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ✅ Grille principale -->
+  <div class="dashboard-grid">
+    
+    <!-- ✅ CARD 1: Statut Premium -->
+    <div class="dashboard-card premium-card" [ngClass]="isPremium() ? 'is-premium' : 'is-free'">
+      <div class="card-header">
+        <div class="card-icon premium-icon">
+          <i class="fas" [ngClass]="isPremium() ? 'fa-crown' : 'fa-star'"></i>
+        </div>
+        <div class="card-title">
+          <h3>{{ isPremium() ? 'Premium' : 'Version Gratuite' }}</h3>
+          <p *ngIf="isPremium()">Expire le {{ getSubscriptionInfo()?.formattedExpiry }}</p>
+          <p *ngIf="!isPremium()">Débloquez toutes les fonctionnalités</p>
         </div>
       </div>
       
-      <!-- Statut Premium -->
-      <div class="premium-status" [ngClass]="getPremiumBadgeClass()">
-        <div *ngIf="isPremium()" class="premium-badge premium-active">
-          <i class="fas fa-crown"></i>
-          <div class="premium-info">
-            <span class="premium-label">Premium</span>
-            <span class="premium-expiry">Expire le {{ getSubscriptionInfo()?.formattedExpiry }}</span>
+      <div class="card-content" *ngIf="!isPremium()">
+        <button class="upgrade-btn-modern" (click)="upgradeToPremium()" [disabled]="isUpgrading">
+          <div *ngIf="isUpgrading" class="btn-loading">
+            <div class="loading-spinner-small"></div>
           </div>
-        </div>
-        
-        <div *ngIf="!isPremium()" class="premium-badge premium-none">
-          <i class="fas fa-star"></i>
-          <div class="premium-info">
-            <span class="premium-label">Free</span>
-            <span class="premium-upgrade">Passez au Premium</span>
+          <div *ngIf="!isUpgrading" class="btn-content">
+            <i class="fas fa-crown"></i>
+            <span>Passer au Premium</span>
+          </div>
+        </button>
+      </div>
+
+      <div class="card-content" *ngIf="isPremium()">
+        <div class="premium-features">
+          <div class="feature-item">
+            <i class="fas fa-check-circle"></i>
+            <span>Création et management de votre guilde</span>
+          </div>
+          <div class="feature-item">
+            <i class="fas fa-check-circle"></i>
+            <span>Support prioritaire</span>
+          </div>
+          <div class="feature-item">
+            <i class="fas fa-check-circle"></i>
+            <span>Création d'événements</span>
+          </div>
+          <div class="feature-item">
+            <i class="fas fa-check-circle"></i>
+            <span>Création d'enchères</span>
+          </div>
+          <div class="feature-item">
+            <i class="fas fa-check-circle"></i>
+            <span>Gestion des équipes en jeu</span>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- ✅ SECTION FUSIONNÉE: Profil de personnage -->
-      <div class="player-profile-section">
-        <div class="profile-header">
-          <h4>🗡️ Mon Personnage & Statistiques</h4>
+    <!-- ✅ CARD 2: Informations utilisateur -->
+    <div class="dashboard-card user-info-card">
+      <div class="card-header">
+        <div class="card-icon user-icon">
+          <i class="fas fa-user"></i>
+        </div>
+        <div class="card-title">
+          <h3>Informations personnelles</h3>
+          <p>Vos données Discord</p>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Email</span>
+            <span class="info-value">{{ user.email }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Discord ID</span>
+            <span class="info-value">{{ user.discord_id }}</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ✅ CARD 3: Profil de personnage -->
+    <div class="dashboard-card character-card">
+      <div class="card-header">
+        <div class="card-icon character-icon">
+          <i class="fas fa-sword"></i>
+        </div>
+        <div class="card-title">
+          <h3>Mon Personnage</h3>
+          <p>Votre profil de jeu WoW</p>
         </div>
         
-        <!-- ✅ BOUTONS SUR UNE LIGNE SÉPARÉE -->
-        <div class="profile-actions" *ngIf="hasPlayerProfile && !isEditingPlayer">
-          <button class="edit-btn" (click)="startEditPlayer()">
+        <!-- Actions du personnage -->
+        <div class="card-actions" *ngIf="hasPlayerProfile && !isEditingPlayer">
+          <button class="action-btn edit-btn" (click)="startEditPlayer()">
             <i class="fas fa-edit"></i>
-            Modifier
           </button>
-          <button class="delete-btn" (click)="deletePlayerProfile()">
+          <button class="action-btn delete-btn" (click)="deletePlayerProfile()">
             <i class="fas fa-trash"></i>
-            Supprimer
           </button>
         </div>
+      </div>
 
-        <!-- Affichage du profil existant -->
-        <div class="player-display" *ngIf="hasPlayerProfile && !isEditingPlayer">
-          <div class="player-info">
-            <div class="info-row">
-              <span class="label">Nom :</span>
-              <span class="value">{{ currentPlayer.name }}</span>
+      <div class="card-content">
+        <!-- ✅ Affichage du profil existant -->
+        <div class="character-display" *ngIf="hasPlayerProfile && !isEditingPlayer">
+          <div class="character-stats">
+            <div class="stat-row">
+              <div class="stat-item main-stat">
+                <div class="stat-icon">
+                  <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-label">Nom</span>
+                  <span class="stat-value">{{ currentPlayer.name }}</span>
+                </div>
+              </div>
             </div>
-            <div class="info-row">
-              <span class="label">Niveau :</span>
-              <span class="value">{{ currentPlayer.level }}</span>
+
+            <div class="stat-row">
+              <div class="stat-item">
+                <div class="stat-icon">
+                  <i class="fas fa-level-up-alt"></i>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-label">Niveau</span>
+                  <span class="stat-value">{{ currentPlayer.level }}</span>
+                </div>
+              </div>
+
+              <div class="stat-item">
+                <div class="stat-icon">
+                  <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-label">Classe</span>
+                  <span class="stat-value class-badge" [attr.data-class]="currentPlayer.class">
+                    {{ getClassDisplayName(currentPlayer.class) }}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div class="info-row">
-              <span class="label">Classe/Rôle :</span>
-              <span class="value class-badge role-class">{{ currentPlayer.class }}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">DKP :</span>
-              <span class="value dkp-value">{{ currentPlayer.dkp || 0 }}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">Événements :</span>
-              <span class="value">{{ currentPlayer.events_joined || 0 }}</span>
+
+            <div class="stat-row">
+              <div class="stat-item">
+                <div class="stat-icon dkp-icon">
+                  <i class="fas fa-coins"></i>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-label">DKP</span>
+                  <span class="stat-value dkp-value">{{ currentPlayer.dkp || 0 }}</span>
+                </div>
+              </div>
+
+              <div class="stat-item">
+                <div class="stat-icon">
+                  <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-label">Événements</span>
+                  <span class="stat-value">{{ currentPlayer.events_joined || 0 }}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Formulaire de création/modification -->
-        <div class="player-form" *ngIf="!hasPlayerProfile || isEditingPlayer">
-          <div class="form-group">
-            <label for="player-name">Nom du personnage *</label>
-            <input 
-              id="player-name"
-              type="text" 
-              [(ngModel)]="playerForm.name"
-              placeholder="Ex: Legolas"
-              maxlength="50"
-              class="form-input">
-          </div>
+        <!-- ✅ Formulaire de création/modification -->
+        <div class="character-form" *ngIf="!hasPlayerProfile || isEditingPlayer">
+          <div class="form-modern">
+            <div class="input-group">
+              <label for="player-name">Nom du personnage</label>
+              <div class="input-wrapper">
+                <i class="fas fa-user input-icon"></i>
+                <input 
+                  id="player-name"
+                  type="text" 
+                  [(ngModel)]="playerForm.name"
+                  placeholder="Ex: Legolas"
+                  maxlength="50"
+                  class="input-modern">
+              </div>
+            </div>
 
-          <div class="form-group">
-            <label for="player-level">Niveau *</label>
-            <input 
-              id="player-level"
-              type="number" 
-              [(ngModel)]="playerForm.level"
-              min="1" 
-              max="100"
-              class="form-input">
-          </div>
+            <div class="form-row">
+              <div class="input-group">
+                <label for="player-level">Niveau</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-level-up-alt input-icon"></i>
+                  <input 
+                    id="player-level"
+                    type="number" 
+                    [(ngModel)]="playerForm.level"
+                    min="1" 
+                    max="55"
+                    placeholder="55"
+                    class="input-modern">
+                </div>
+              </div>
 
-          <!-- ✅ MODIFIÉ: Select pour le rôle qui devient la classe -->
-          <div class="form-group">
-            <label for="player-class">Rôle/Classe *</label>
-            <select 
-              id="player-class"
-              [(ngModel)]="playerForm.class"
-              class="form-select">
-              <option value="tank">🛡️ Tank</option>
-              <option value="dps">⚔️ DPS</option>
-              <option value="support">🩹 Support</option>
-              <option value="range">🏹 Range</option>
-              <option value="mage">🔮 Mage</option>
-            </select>
-          </div>
+              <div class="input-group">
+                <label for="player-class">Classe/Rôle</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-shield-alt input-icon"></i>
+                  <select 
+                    id="player-class"
+                    [(ngModel)]="playerForm.class"
+                    class="select-modern">
+                    <option value="tank">🛡️ Tank</option>
+                    <option value="dps">⚔️ DPS</option>
+                    <option value="support">🩹 Support</option>
+                    <option value="range">🏹 Range</option>
+                    <option value="mage">🔮 Mage</option>
+                  </select>
+                </div>
+              </div>
+            </div>
 
-          <div class="form-actions">
-            <button 
-              class="save-btn"
-              (click)="savePlayerProfile()"
-              [disabled]="isSubmittingPlayer || !playerForm.name.trim()">
-              <i *ngIf="!isSubmittingPlayer" class="fas fa-save"></i>
-              <i *ngIf="isSubmittingPlayer" class="fas fa-spinner fa-spin"></i>
-              {{ isSubmittingPlayer ? 'Sauvegarde...' : (hasPlayerProfile ? 'Mettre à jour' : 'Créer profil') }}
-            </button>
-            
-            <button 
-              *ngIf="isEditingPlayer"
-              class="cancel-btn"
-              (click)="cancelEditPlayer()">
-              <i class="fas fa-times"></i>
-              Annuler
-            </button>
+            <div class="form-actions-modern">
+              <button 
+                class="btn-primary"
+                (click)="savePlayerProfile()"
+                [disabled]="isSubmittingPlayer || !playerForm.name.trim()">
+                <i *ngIf="!isSubmittingPlayer" class="fas fa-save"></i>
+                <i *ngIf="isSubmittingPlayer" class="fas fa-spinner fa-spin"></i>
+                {{ isSubmittingPlayer ? 'Sauvegarde...' : (hasPlayerProfile ? 'Mettre à jour' : 'Créer profil') }}
+              </button>
+              
+              <button 
+                *ngIf="isEditingPlayer"
+                class="btn-secondary"
+                (click)="cancelEditPlayer()">
+                <i class="fas fa-times"></i>
+                Annuler
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- Message d'aide -->
-        <div class="help-text" *ngIf="!hasPlayerProfile && !isEditingPlayer">
-          <p><i class="fas fa-info-circle"></i> Créez votre profil de personnage WoW pour suivre vos DKP et événements.</p>
-          <button class="create-profile-btn" (click)="isEditingPlayer = true">
+        <!-- ✅ Message d'aide -->
+        <div class="help-section" *ngIf="!hasPlayerProfile && !isEditingPlayer">
+          <div class="help-content">
+            <div class="help-icon">
+              <i class="fas fa-info-circle"></i>
+            </div>
+            <div class="help-text">
+              <h4>Créez votre profil</h4>
+              <p>Configurez votre personnage WoW pour suivre vos DKP et participer aux événements de guilde.</p>
+            </div>
+          </div>
+          <button class="btn-create" (click)="isEditingPlayer = true">
             <i class="fas fa-plus"></i>
             Créer mon profil
           </button>
         </div>
       </div>
-    </section>
+    </div>
 
-    <!-- Colonne Actions/Stats -->
-    <section class="user-actions">
-      <h3>Actions rapides</h3>
-      <button class="dashboard-btn" (click)="goToGuild()">Voir ma guilde</button>
+    <!-- ✅ CARD 4: Actions rapides -->
+    <div class="dashboard-card actions-card">
+      <div class="card-header">
+        <div class="card-icon actions-icon">
+          <i class="fas fa-bolt"></i>
+        </div>
+        <div class="card-title">
+          <h3>Actions rapides</h3>
+          <p>Accès direct aux fonctionnalités</p>
+        </div>
+      </div>
 
-    </section>
+      <div class="card-content">
+        <div class="quick-actions">
+          <button class="quick-action-btn guild-btn" (click)="goToGuild()">
+            <div class="action-icon">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="action-content">
+              <span class="action-title">Ma Guilde</span>
+              <span class="action-desc">Gérer ma guilde</span>
+            </div>
+            <i class="fas fa-chevron-right action-arrow"></i>
+          </button>
+
+          <button class="quick-action-btn events-btn" (click)="goToEvents()">
+            <div class="action-icon">
+              <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div class="action-content">
+              <span class="action-title">Événements</span>
+              <span class="action-desc">Voir les événements</span>
+            </div>
+            <i class="fas fa-chevron-right action-arrow"></i>
+          </button>
+
+          <button class="quick-action-btn settings-btn" (click)="goToSettings()">
+            <div class="action-icon">
+              <i class="fas fa-cog"></i>
+            </div>
+            <div class="action-content">
+              <span class="action-title">Enchères</span>
+              <span class="action-desc">Voir les enchères</span>
+            </div>
+            <i class="fas fa-chevron-right action-arrow"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ CARD 5: Statistiques -->
+    <div class="dashboard-card stats-card">
+      <div class="card-header">
+        <div class="card-icon stats-icon">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="card-title">
+          <h3>Statistiques</h3>
+          <p>Votre activité récente</p>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-number">{{ currentPlayer?.events_joined || 0 }}</div>
+            <div class="stat-label">Événements</div>
+            <div class="stat-icon">
+              <i class="fas fa-calendar-check"></i>
+            </div>
+          </div>
+
+          <div class="stat-box">
+            <div class="stat-number">{{ currentPlayer?.dkp || 0 }}</div>
+            <div class="stat-label">DKP Total</div>
+            <div class="stat-icon">
+              <i class="fas fa-coins"></i>
+            </div>
+          </div>
+
+          <div class="stat-box">
+            <div class="stat-number">{{ currentPlayer?.level || 0 }}</div>
+            <div class="stat-label">Niveau</div>
+            <div class="stat-icon">
+              <i class="fas fa-level-up-alt"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<!-- Template de fallback pendant le chargement -->
+<!-- ✅ Template de chargement amélioré -->
 <ng-template #loading>
-  <div class="loading-container">
-    <div class="loading-spinner"></div>
-    <h3>Chargement de votre dashboard...</h3>
-    <p>Veuillez patienter...</p>
+  <div class="loading-modern">
+    <div class="loading-content">
+      <div class="loading-spinner-large"></div>
+      <h3>Chargement de votre dashboard</h3>
+      <p>Préparation de vos données...</p>
+    </div>
   </div>
 </ng-template>
 
-<!-- Notification en bas à droite -->
-<div *ngIf="notification" class="dashboard-notification">
-  {{ notification }}
+<!-- ✅ Notification moderne -->
+<div *ngIf="notification" class="notification-modern">
+  <div class="notification-content">
+    <i class="fas fa-check-circle"></i>
+    <span>{{ notification }}</span>
+  </div>
 </div>

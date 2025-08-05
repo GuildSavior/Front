@@ -46,6 +46,10 @@ export class MainLayoutComponent implements OnInit {
     });
   }
 
+  goToHome() {
+    this.router.navigate(['/']);
+  }
+
   // ✅ Fonction de login
   login() {
     this.discordAuthService.loginWithDiscord();
