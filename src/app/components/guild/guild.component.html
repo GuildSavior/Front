@@ -130,7 +130,16 @@
           <i class="fas fa-shield-alt"></i>
         </div>
         <div class="guild-details">
-          <h2>{{ guild.name }}</h2>
+          <div class="guild-title-row">
+            <h2>{{ guild.name }}</h2>
+            <!-- ✅ NOUVEAU : Badge propriétaire déplacé ici -->
+            <div *ngIf="guild && isGuildOwner" class="owner-badge-compact">
+              <div class="owner-content">
+                <i class="fas fa-crown"></i>
+                <span class="owner-text">Propriétaire</span>
+              </div>
+            </div>
+          </div>
           <p class="guild-description">{{ guild.description || 'Aucune description' }}</p>
         </div>
       </div>
@@ -191,15 +200,6 @@
             Dissolution en cours...
           </span>
         </button>
-      </div>
-
-      <!-- ✅ DÉPLACER et AMÉLIORER le message propriétaire pour le rendre plus visible -->
-      <div *ngIf="guild && isGuildOwner" class="owner-badge">
-        <div class="owner-content">
-          <i class="fas fa-crown"></i>
-          <span class="owner-text">Vous êtes le propriétaire de cette guilde</span>
-          <div class="owner-shine"></div>
-        </div>
       </div>
     </div>
 

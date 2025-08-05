@@ -102,7 +102,6 @@ export class EventsComponent implements OnInit {
             },
             error: (error) => {
               if (error.status === 404) {
-                this.errorMessage = 'Vous devez être membre d\'une guilde pour voir les événements.';
                 if (environment.enableDebugLogs) {
                   console.log('ℹ️ Utilisateur sans guilde (404)');
                 }
@@ -126,7 +125,11 @@ export class EventsComponent implements OnInit {
 
   // ✅ CHARGEMENT DES ÉVÉNEMENTS
   loadEvents() {
+    // ✅ NOUVEAU: Ne pas charger les événements si pas de guilde
     if (!this.guild) {
+      if (environment.enableDebugLogs) {
+        console.log('ℹ️ Pas de guilde, pas de chargement d\'événements');
+      }
       return;
     }
 
@@ -156,12 +159,12 @@ export class EventsComponent implements OnInit {
         this.events = [];
         
         if (error.status === 403) {
-          this.errorMessage = 'Vous ne possédez aucune guilde.';
+          // ✅ NOUVEAU: Message plus doux
+          console.log('ℹ️ Pas d\'accès aux événements (pas de guilde)');
         } else {
           this.errorMessage = 'Erreur lors du chargement des événements.';
+          setTimeout(() => this.errorMessage = '', 3000);
         }
-        
-        setTimeout(() => this.errorMessage = '', 3000);
       }
     });
   }
@@ -792,5 +795,8 @@ export class EventsComponent implements OnInit {
     const remainingMinutes = minutesLeft % 60;
     
     return `Validation expire dans ${hoursLeft}h${remainingMinutes > 0 ? remainingMinutes + 'm' : ''}`;
+  }
+  goToGuild() {
+    this.router.navigate(['/guild']);
   }
 }

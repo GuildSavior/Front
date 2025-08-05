@@ -85,6 +85,7 @@ export class GuildComponent implements OnInit {
     }
     this.loadUserAndGuild();
   }
+  
 
   // ✅ CHARGEMENT INITIAL
   loadUserAndGuild() {

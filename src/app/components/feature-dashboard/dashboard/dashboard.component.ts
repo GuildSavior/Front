@@ -71,6 +71,9 @@ export class DashboardComponent implements OnInit {
   isLoading = true; // ✅ AJOUTER pour l'état de chargement
   environment: any;
 
+  // ✅ NOUVEAU: Propriété pour l'upgrade
+  isUpgrading = false;
+
   ngOnInit() {
     // ✅ Debug en développement
     if (environment.enableDebugLogs) {
@@ -252,8 +255,8 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
-    if (this.playerForm.level < 1 || this.playerForm.level > 100) {
-      this.notification = '❌ Le niveau doit être entre 1 et 100';
+    if (this.playerForm.level < 1 || this.playerForm.level > 55) {
+      this.notification = '❌ Le niveau doit être entre 1 et 55';
       setTimeout(() => this.notification = null, 3000);
       return;
     }
@@ -376,5 +379,100 @@ export class DashboardComponent implements OnInit {
     
     // ✅ Plus besoin de logoutAndRedirect(), juste logout()
     this.authService.logout();
+  }
+
+  // ✅ NOUVEAU: Méthode upgradeToPremium (identique à guild)
+  upgradeToPremium() {
+    console.log("Lancement de l'achat premium depuis le dashboard");
+    
+    this.isUpgrading = true;
+    
+    const token = this.getCookie('auth_token');
+    
+    if (!token) {
+      console.warn('Utilisateur non connecté, redirection vers Discord');
+      localStorage.setItem('pendingPremium', '1');
+      
+      // Redirection vers la page d'accueil pour se connecter
+      this.router.navigate(['/home']);
+      
+      this.isUpgrading = false;
+      return;
+    }
+
+    console.log("Utilisateur connecté, lancement de Stripe");
+    this.launchStripe();
+  }
+
+  // ✅ NOUVEAU: Méthode pour lancer Stripe
+  private launchStripe() {
+    const token = this.getCookie('auth_token');
+    
+    const headers = {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+
+    // ✅ Utiliser fetch au lieu de HttpClient pour éviter les imports
+    fetch(`${environment.apiUrl}/stripe/create-checkout-session`, {
+      method: 'POST',
+      headers: headers,
+      credentials: 'include',
+      body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.url) {
+        console.log('✅ Session Stripe créée, redirection...');
+        
+        // ✅ Message de feedback
+        this.notification = '🚀 Redirection vers le paiement sécurisé...';
+        
+        // Redirection vers Stripe
+        window.location.href = data.url;
+      } else {
+        console.error('❌ Pas d\'URL de redirection dans la réponse Stripe');
+        this.notification = '❌ Erreur lors de la création de la session de paiement.';
+        this.isUpgrading = false;
+        setTimeout(() => this.notification = null, 4000);
+      }
+    })
+    .catch(error => {
+      console.error('❌ Erreur Stripe:', error);
+      this.notification = '❌ Erreur lors de la connexion au service de paiement.';
+      this.isUpgrading = false;
+      setTimeout(() => this.notification = null, 4000);
+    });
+  }
+
+  // ✅ NOUVEAU: Méthode getCookie
+  private getCookie(name: string): string | null {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) {
+      return parts.pop()?.split(';').shift() || null;
+    }
+    return null;
+  }
+
+  // Méthode pour obtenir le nom d'affichage de la classe
+  getClassDisplayName(classKey: string): string {
+    const classNames: { [key: string]: string } = {
+      'tank': '🛡️ Tank',
+      'dps': '⚔️ DPS', 
+      'support': '🩹 Support',
+      'range': '🏹 Range',
+      'mage': '🔮 Mage'
+    };
+    return classNames[classKey] || classKey;
+  }
+
+  // Méthodes de navigation (à adapter selon tes routes)
+  goToEvents() {
+    this.router.navigate(['/events']);
+  }
+
+  goToSettings() {
+    this.router.navigate(['/auctions']);
   }
 }

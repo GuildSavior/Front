@@ -3,7 +3,6 @@
   <!-- Header -->
   <div class="events-header">
     <div class="header-content">
-      <!-- ✅ NOUVEAU : Titre simple en violet comme guild -->
       <h1 class="page-title">
         <i class="fas fa-calendar-alt mr-3"></i>
         Événements de guilde
@@ -13,7 +12,6 @@
     
     <!-- Bouton créer événement (owner seulement) -->
     <div class="header-actions" *ngIf="isGuildOwner">
-      <!-- ✅ NOUVEAU : Même style que les boutons guild -->
       <button 
         class="action-btn create-event-btn" 
         (click)="showCreateEventForm()"
@@ -24,7 +22,7 @@
     </div>
   </div>
 
-  <!-- Messages -->
+  <!-- ✅ Messages d'erreur et de succès -->
   <div *ngIf="errorMessage" class="alert alert-error">
     <i class="fas fa-exclamation-triangle mr-2"></i>
     {{ errorMessage }}
@@ -35,8 +33,26 @@
     {{ successMessage }}
   </div>
 
-  <!-- Formulaire création événement -->
-  <div *ngIf="showCreateForm" class="create-event-form">
+  <!-- ✅ NOUVEAU: Si l'utilisateur n'a pas de guilde (même style que guild.component) -->
+  <div *ngIf="!guild && !isLoadingEvents" class="no-guild">
+    <div class="no-guild-card">
+      <div class="no-guild-icon">
+        <i class="fas fa-calendar-times"></i>
+      </div>
+      <h2>Vous n'avez pas encore de guilde</h2>
+      <p>Rejoignez ou créez une guilde pour participer aux événements et gagner des DKP !</p>
+      
+      <div class="guild-actions">
+        <button class="create-guild-btn" (click)="goToGuild()">
+          <i class="fas fa-shield-alt mr-2"></i>
+          Creer ma guilde
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ Formulaire de création d'événement -->
+  <div *ngIf="showCreateForm && isGuildOwner" class="create-event-form">
     <div class="form-card">
       <div class="form-header">
         <h3>Créer un nouvel événement</h3>
@@ -126,8 +142,9 @@
     </div>
   </div>
 
-  <!-- Section des événements -->
-  <div class="events-section">
+  <!-- ✅ Section des événements (seulement si guilde existe) -->
+  <div *ngIf="guild" class="events-section">
+    <!-- Loading events -->
     <div *ngIf="isLoadingEvents" class="loading-events">
       <div class="loading-spinner"></div>
       <p>Chargement des événements...</p>
@@ -135,7 +152,26 @@
 
     <!-- Liste des événements -->
     <div *ngIf="!isLoadingEvents" class="events-list">
-      
+      <!-- Message si pas d'événements -->
+      <div *ngIf="events.length === 0" class="no-events">
+        <div class="no-events-card">
+          <div class="no-events-icon">
+            <i class="fas fa-calendar-plus"></i>
+          </div>
+          <h3>Aucun événement</h3>
+          <p *ngIf="isGuildOwner">Créez le premier événement de votre guilde !</p>
+          <p *ngIf="!isGuildOwner">Il n'y a pas encore d'événements dans votre guilde.</p>
+          
+          <button *ngIf="isGuildOwner" 
+                  class="action-btn create-first-event-btn" 
+                  (click)="showCreateEventForm()">
+            <i class="fas fa-plus mr-2"></i>
+            Créer le premier événement
+          </button>
+        </div>
+      </div>
+
+      <!-- Cards des événements -->
       <div *ngFor="let event of events" class="event-card" [attr.data-event-id]="event.id">
         
         <!-- Header -->
@@ -343,46 +379,13 @@
       
     </div> <!-- Fin events-list -->
     
-    <!-- Message si pas d'événements -->
-    <div *ngIf="events.length === 0 && !isLoadingEvents" class="no-events">
-      <div class="no-events-card">
-        <div class="no-events-icon">
-          <i class="fas fa-calendar-times"></i>
-        </div>
-        <h3>Aucun événement</h3>
-        <p>Il n'y a pas encore d'événements dans votre guilde.</p>
-        <button *ngIf="isGuildOwner" class="create-first-event-btn" (click)="showCreateEventForm()">
-          <i class="fas fa-plus mr-2"></i>
-          Créer le premier événement
-        </button>
-      </div>
-    </div>
-    
   </div>
 </div>
 
-<!-- Template loading -->
+<!-- Loading template -->
 <ng-template #loading>
   <div class="loading-container">
     <div class="loading-spinner"></div>
-    <p>Chargement...</p>
+    <p>Chargement des informations...</p>
   </div>
 </ng-template>
-
-<!-- Message si pas de guilde -->
-<div *ngIf="!isLoading && !guild" class="no-guild">
-  <div class="no-guild-card">
-    <div class="no-guild-icon">
-      <i class="fas fa-shield-alt"></i>
-    </div>
-    <h2>Aucune guilde</h2>
-    <p>Vous devez être membre d'une guilde pour voir les événements.</p>
-    
-    <div>
-      <button class="create-guild-btn" (click)="goToDashboard()">
-        <i class="fas fa-arrow-left mr-2"></i>
-        Retour au Dashboard
-      </button>
-    </div>
-  </div>
-</div>
