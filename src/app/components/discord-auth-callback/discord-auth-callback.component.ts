@@ -11,14 +11,52 @@ import { environment } from '../../../environments/environment'; // ✅ AJOUTER
   standalone: true,
   imports: [RouterModule],
   template: `
-    <div style="text-align: center; padding: 2rem;">
-      <h3>Connexion en cours...</h3>
-      <p>Veuillez patienter...</p>
-      <!-- ✅ Debug info en développement -->
-      <small *ngIf="!environment.production" style="color: #fbbf24; display: block; margin-top: 1rem;">
-        🔧 Environnement: {{ environment.production ? 'Production' : 'Développement' }}<br>
-        🔧 API: {{ environment.apiUrl }}
-      </small>
+    <div class="auth-callback-container">
+      <div class="auth-callback-card">
+        <!-- ✅ Icône Discord animée -->
+        <div class="discord-icon">
+          <i class="fab fa-discord"></i>
+          <div class="pulse-ring"></div>
+        </div>
+        
+        <!-- ✅ Contenu principal -->
+        <div class="auth-content">
+          <h2>Connexion Discord</h2>
+          <p>Authentification en cours...</p>
+          
+          <!-- ✅ Barre de progression -->
+          <div class="progress-bar">
+            <div class="progress-fill"></div>
+          </div>
+          
+          <!-- ✅ Message d'état -->
+          <div class="auth-status">
+            <i class="fas fa-shield-alt"></i>
+            <span>Vérification sécurisée</span>
+          </div>
+        </div>
+        
+        <!-- ✅ Debug info en développement seulement -->
+        <div *ngIf="!environment.production" class="debug-info">
+          <details>
+            <summary>🔧 Informations de debug</summary>
+            <div class="debug-content">
+              <p><strong>Environnement:</strong> {{ environment.production ? 'Production' : 'Développement' }}</p>
+              <p><strong>API:</strong> {{ environment.apiUrl }}</p>
+              <p><strong>Status:</strong> Vérification en cours...</p>
+            </div>
+          </details>
+        </div>
+      </div>
+      
+      <!-- ✅ Particules d'arrière-plan -->
+      <div class="background-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+      </div>
     </div>
   `,
   styleUrl: './discord-auth-callback.component.scss'

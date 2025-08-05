@@ -11,6 +11,7 @@ import { User } from '../../../models/user.model'; // ✅ CORRIGER le chemin
 import { Player, PlayerClass } from '../../../models/player.model'; // ✅ CORRIGER le chemin
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../../../environments/environment';
+import { NotificationService } from '../../../services/notification/notification.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -73,7 +74,7 @@ export class DashboardComponent implements OnInit {
 
   // ✅ NOUVEAU: Propriété pour l'upgrade
   isUpgrading = false;
-
+  private notificationService = inject(NotificationService);
   ngOnInit() {
     // ✅ Debug en développement
     if (environment.enableDebugLogs) {
@@ -250,14 +251,18 @@ export class DashboardComponent implements OnInit {
 
   savePlayerProfile() {
     if (!this.playerForm.name.trim()) {
-      this.notification = '❌ Le nom du personnage est obligatoire';
-      setTimeout(() => this.notification = null, 3000);
+      this.notificationService.error(
+        'Erreur de validation',
+        '❌ Le nom du personnage est obligatoire'
+      );
       return;
     }
 
     if (this.playerForm.level < 1 || this.playerForm.level > 55) {
-      this.notification = '❌ Le niveau doit être entre 1 et 55';
-      setTimeout(() => this.notification = null, 3000);
+      this.notificationService.error(
+        'Erreur de validation',
+        '❌ Le niveau doit être entre 1 et 55'
+      );
       return;
     }
 
@@ -270,10 +275,12 @@ export class DashboardComponent implements OnInit {
           this.hasPlayerProfile = true;
           this.isEditingPlayer = false;
           this.player.classe = this.playerForm.class;
-          
-          this.notification = `✅ ${response.message}`;
-          setTimeout(() => this.notification = null, 4000);
-          
+
+          this.notificationService.success(
+            'Profil sauvegardé',
+            `✅ ${response.message}`
+          );
+
           if (environment.enableDebugLogs) {
             console.log('✅ Profil sauvegardé:', this.currentPlayer);
           }
@@ -282,15 +289,17 @@ export class DashboardComponent implements OnInit {
       },
       error: (error) => {
         console.error('❌ Erreur sauvegarde:', error);
-        this.notification = error.error?.message || '❌ Erreur lors de la sauvegarde';
-        setTimeout(() => this.notification = null, 4000);
+        this.notificationService.error(
+          'Erreur de sauvegarde',
+          error.error?.message || '❌ Erreur lors de la sauvegarde'
+        );
         this.isSubmittingPlayer = false;
       }
     });
   }
 
   deletePlayerProfile() {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer votre profil joueur ? Cette action est irréversible.')) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer votre profil joueur ? Cette action est irréversible. VOUS PERDREZ TOUT VOS DKP !')) {
       return;
     }
 
@@ -306,14 +315,18 @@ export class DashboardComponent implements OnInit {
             class: 'dps'
           };
           this.player.classe = 'dps';
-          this.notification = '✅ Profil joueur supprimé avec succès';
-          setTimeout(() => this.notification = null, 4000);
+          this.notificationService.success(
+            'Profil supprimé',
+            '✅ Votre profil joueur a été supprimé avec succès'
+          );
         }
       },
       error: (error) => {
         console.error('❌ Erreur suppression:', error);
-        this.notification = '❌ Erreur lors de la suppression';
-        setTimeout(() => this.notification = null, 4000);
+        this.notificationService.error(
+          'Erreur de suppression',
+          error.error?.message || '❌ Erreur lors de la suppression du profil joueur'
+        );
       }
     });
   }
@@ -383,7 +396,6 @@ export class DashboardComponent implements OnInit {
 
   // ✅ NOUVEAU: Méthode upgradeToPremium (identique à guild)
   upgradeToPremium() {
-    console.log("Lancement de l'achat premium depuis le dashboard");
     
     this.isUpgrading = true;
     
@@ -399,8 +411,6 @@ export class DashboardComponent implements OnInit {
       this.isUpgrading = false;
       return;
     }
-
-    console.log("Utilisateur connecté, lancement de Stripe");
     this.launchStripe();
   }
 
@@ -423,25 +433,29 @@ export class DashboardComponent implements OnInit {
     .then(response => response.json())
     .then(data => {
       if (data.url) {
-        console.log('✅ Session Stripe créée, redirection...');
-        
-        // ✅ Message de feedback
-        this.notification = '🚀 Redirection vers le paiement sécurisé...';
-        
+        this.notificationService.success(
+          'Session Stripe créée',
+          '✅ Redirection vers le paiement sécurisé...'
+        );
+
         // Redirection vers Stripe
         window.location.href = data.url;
       } else {
         console.error('❌ Pas d\'URL de redirection dans la réponse Stripe');
-        this.notification = '❌ Erreur lors de la création de la session de paiement.';
+        this.notificationService.error(
+          'Erreur de création de session',
+          '❌ Erreur lors de la création de la session de paiement.'
+        );
         this.isUpgrading = false;
-        setTimeout(() => this.notification = null, 4000);
       }
     })
     .catch(error => {
       console.error('❌ Erreur Stripe:', error);
-      this.notification = '❌ Erreur lors de la connexion au service de paiement.';
+      this.notificationService.error(
+        'Erreur de connexion',
+        '❌ Erreur lors de la connexion au service de paiement.'
+      );
       this.isUpgrading = false;
-      setTimeout(() => this.notification = null, 4000);
     });
   }
 

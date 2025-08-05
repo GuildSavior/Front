@@ -22,17 +22,6 @@
     </div>
   </div>
 
-  <!-- ✅ Messages d'erreur et de succès -->
-  <div *ngIf="errorMessage" class="alert alert-error">
-    <i class="fas fa-exclamation-triangle mr-2"></i>
-    {{ errorMessage }}
-  </div>
-
-  <div *ngIf="successMessage" class="alert alert-success">
-    <i class="fas fa-check-circle mr-2"></i>
-    {{ successMessage }}
-  </div>
-
   <!-- ✅ NOUVEAU: Si l'utilisateur n'a pas de guilde (même style que guild.component) -->
   <div *ngIf="!guild && !isLoadingEvents" class="no-guild">
     <div class="no-guild-card">

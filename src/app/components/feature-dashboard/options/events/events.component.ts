@@ -9,6 +9,7 @@ import { User } from '../../../../models/user.model';
 import { Guild } from '../../../../models/guild.model';
 import { Event } from '../../../../services/events/events.service'; 
 import { environment } from '../../../../../environments/environment';
+import { NotificationService } from '../../../../services/notification/notification.service';
 
 @Component({
   selector: 'app-events',
@@ -53,6 +54,7 @@ export class EventsComponent implements OnInit {
   showCreateForm = false;
   showValidationModal = false;
   selectedEvent: Event | null = null;
+  private notificationService = inject(NotificationService);
 
   // ✅ Propriété pour savoir si l'utilisateur est owner
   get isGuildOwner(): boolean {
@@ -252,7 +254,10 @@ export class EventsComponent implements OnInit {
             dkp_reward: 10
           };
           
-          this.successMessage = '🎉 Événement créé avec succès !';
+           this.notificationService.success(
+              'Événement créé avec succès !', 
+              'Votre événement a été ajouté à la liste.'
+            );
           setTimeout(() => this.successMessage = '', 5000);
         } else {
           this.errorMessage = response.message || 'Erreur lors de la création';
@@ -290,17 +295,27 @@ export class EventsComponent implements OnInit {
         if (response.success) {
           // ✅ Recharger les événements pour avoir les bonnes données
           this.loadEvents();
-          this.successMessage = '✅ Inscription réussie !';
-          setTimeout(() => this.successMessage = '', 3000);
+          this.notificationService.success(
+            'Inscription réussie !', 
+            `Vous êtes maintenant inscrit à l'événement "${event.name}".`
+          );
         } else {
-          this.errorMessage = response.message || 'Erreur lors de l\'inscription';
+          this.notificationService.error(
+            'Erreur lors de l\'inscription',
+            'Une erreur est survenue.'
+          );
+          this.notificationService.error(
+            'Erreur lors de l\'inscription',
+            this.errorMessage
+          );
           setTimeout(() => this.errorMessage = '', 3000);
         }
       },
       error: (error) => {
-        console.error('❌ Erreur inscription:', error);
-        this.errorMessage = error.error?.message || 'Erreur lors de l\'inscription';
-        setTimeout(() => this.errorMessage = '', 3000);
+        this.notificationService.error(
+          'Erreur lors de l\'inscription',
+          error.error?.message || 'Erreur lors de l\'inscription'
+        );
       }
     });
   }
@@ -308,14 +323,18 @@ export class EventsComponent implements OnInit {
   // ✅ CONFIRMER SA VENUE - Corriger
   confirmParticipation(event: Event) {
     if (!event.user_participation?.status) {
-      this.errorMessage = 'Vous devez d\'abord vous inscrire à l\'événement.';
-      setTimeout(() => this.errorMessage = '', 3000);
+      this.notificationService.warning(
+        'Inscription requise',
+        'Vous devez d\'abord vous inscrire à l\'événement.'
+      );
       return;
     }
 
     if (event.user_participation.status === 'confirmed' || event.user_participation.status === 'attended') {
-      this.errorMessage = 'Vous avez déjà confirmé votre venue.';
-      setTimeout(() => this.errorMessage = '', 3000);
+      this.notificationService.warning(
+        'Confirmation requise',
+        'Vous avez déjà confirmé votre venue.'
+      );
       return;
     }
 
@@ -324,17 +343,22 @@ export class EventsComponent implements OnInit {
         if (response.success) {
           // ✅ Recharger les événements
           this.loadEvents();
-          this.successMessage = '✅ Venue confirmée !';
-          setTimeout(() => this.successMessage = '', 3000);
+          this.notificationService.success(
+            '✅ Venue confirmée !',
+            'Votre participation à l\'événement a été confirmée.'
+          );
         } else {
-          this.errorMessage = response.message || 'Erreur lors de la confirmation';
-          setTimeout(() => this.errorMessage = '', 3000);
+          this.notificationService.error(
+            'Erreur lors de la confirmation',
+            response.message || 'Erreur lors de la confirmation'
+          );
         }
       },
       error: (error) => {
-        console.error('❌ Erreur confirmation:', error);
-        this.errorMessage = error.error?.message || 'Erreur lors de la confirmation';
-        setTimeout(() => this.errorMessage = '', 3000);
+        this.notificationService.error(
+          'Erreur lors de la confirmation',
+          error.error?.message || 'Erreur lors de la confirmation'
+        );
       }
     });
   }
@@ -342,12 +366,18 @@ export class EventsComponent implements OnInit {
   // ✅ VALIDER PRÉSENCE AVEC CODE - Corriger
   validateAttendance() {
     if (!this.validationForm.code.trim()) {
-      this.errorMessage = 'Veuillez entrer le code de validation.';
+      this.notificationService.error(
+        'Erreur de validation',
+        'Veuillez entrer le code de validation.'
+      );
       return;
     }
 
     if (!this.validationForm.eventId) {
-      this.errorMessage = 'Erreur: événement non sélectionné.';
+      this.notificationService.error(
+        'Erreur de validation',
+        'Erreur: événement non sélectionné.'
+      );
       return;
     }
 
@@ -359,24 +389,37 @@ export class EventsComponent implements OnInit {
         if (response.success) {
           // ✅ Recharger les événements
           this.loadEvents();
-          this.successMessage = `🎉 Présence validée ! Vous avez reçu ${response.dkp_earned} DKP !`;
-          setTimeout(() => this.successMessage = '', 5000);
+          this.notificationService.success(
+            '🎉 Présence validée !',
+            `Vous avez reçu ${response.dkp_earned} DKP !`
+          );
         } else {
-          this.errorMessage = response.message || 'Code de validation incorrect.';
+          this.notificationService.error(
+            'Erreur de validation',
+            response.message || 'Code de validation incorrect.'
+          );
         }
         
         this.isSubmitting = false;
       },
       error: (error) => {
-        console.error('❌ Erreur validation:', error);
         this.isSubmitting = false;
         
         if (error.status === 400) {
-          this.errorMessage = error.error?.message || 'Code de validation incorrect.';
+          this.notificationService.error(
+            'Erreur de validation',
+            error.error?.message || 'Code de validation incorrect.'
+          );
         } else if (error.status === 403) {
-          this.errorMessage = 'Vous n\'êtes pas autorisé à valider cette présence.';
+          this.notificationService.error(
+            'Erreur de validation',
+            'Vous n\'êtes pas autorisé à valider cette présence.'
+          );
         } else {
-          this.errorMessage = error.error?.message || 'Erreur lors de la validation.';
+          this.notificationService.error(
+            'Erreur de validation',
+            error.error?.message || 'Erreur lors de la validation.'
+          );
         }
       }
     });
@@ -442,8 +485,11 @@ export class EventsComponent implements OnInit {
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(event.access_code).then(() => {
         // ✅ Feedback visuel amélioré
-        this.successMessage = `📋 Code "${event.access_code}" copié dans le presse-papier !`;
-        
+        this.notificationService.success(
+          'Code copié',
+          `📋 Code "${event.access_code}" copié dans le presse-papier !`
+        );
+
         // ✅ Ajouter effet visuel sur le bouton (optionnel)
         const copyBtn = document.querySelector(`[data-event-id="${event.id}"] .copy-code-btn`);
         if (copyBtn) {
@@ -457,14 +503,16 @@ export class EventsComponent implements OnInit {
           console.log('✅ Code d\'accès copié:', event.access_code);
         }
       }).catch((err) => {
-        console.error('❌ Erreur copie:', err);
-        this.errorMessage = 'Impossible de copier le code. Copiez-le manuellement.';
-        setTimeout(() => this.errorMessage = '', 3000);
+        this.notificationService.error(
+          'Erreur de copie',
+          'Impossible de copier le code. Copiez-le manuellement.'
+        );
       });
     } else {
-      // ✅ Fallback pour navigateurs non compatibles
-      this.errorMessage = 'Copie automatique non supportée. Copiez le code manuellement.';
-      setTimeout(() => this.errorMessage = '', 3000);
+      this.notificationService.error(
+        'Erreur de copie',
+        'Copie automatique non supportée. Copiez le code manuellement.'
+      );
     }
   }
 
@@ -525,8 +573,10 @@ export class EventsComponent implements OnInit {
     const code = this.eventValidationCodes[event.id];
     
     if (!code || !code.trim()) {
-      this.errorMessage = 'Veuillez entrer le code de validation donné par l\'organisateur.';
-      setTimeout(() => this.errorMessage = '', 3000);
+      this.notificationService.error(
+        'Erreur de validation',
+        'Veuillez entrer le code de validation donné par l\'organisateur.'
+      );
       return;
     }
 
@@ -547,11 +597,20 @@ export class EventsComponent implements OnInit {
 
     if (!canValidate) {
       if (now > gracePeriod) {
-        this.errorMessage = 'Cet événement est terminé. La validation n\'est plus possible (délai de 30 min dépassé).';
+        this.notificationService.error(
+          'Erreur de validation',
+          'Cet événement est terminé. La validation n\'est plus possible (délai de 30 min dépassé).'
+        );
       } else if (now < new Date(event.start_time)) {
-        this.errorMessage = 'La validation n\'est pas encore disponible pour cet événement.';
+        this.notificationService.error(
+          'Erreur de validation',
+          'La validation n\'est pas encore disponible pour cet événement.'
+        );
       } else {
-        this.errorMessage = 'Vous devez confirmer votre venue pour pouvoir valider votre présence.';
+        this.notificationService.error(
+          'Erreur de validation',
+          'Vous devez confirmer votre venue pour pouvoir valider votre présence.'
+        );
       }
       setTimeout(() => this.errorMessage = '', 4000);
       return;
@@ -559,28 +618,32 @@ export class EventsComponent implements OnInit {
 
     // Vérifications préalables
     if (this.getUserParticipationStatus(event) === 'attended') {
-      this.errorMessage = 'Vous avez déjà validé votre présence pour cet événement.';
-      setTimeout(() => this.errorMessage = '', 3000);
+      this.notificationService.error(
+        'Erreur de validation',
+        'Vous avez déjà validé votre présence pour cet événement.'
+      );
       return;
     }
 
     if (this.getUserParticipationStatus(event) === 'not_participating') {
-      this.errorMessage = 'Vous devez d\'abord vous inscrire à cet événement.';
-      setTimeout(() => this.errorMessage = '', 3000);
+      this.notificationService.error(
+        'Erreur de validation',
+        'Vous devez d\'abord vous inscrire à cet événement.'
+      );
       return;
     }
 
     if (this.getUserParticipationStatus(event) === 'interested') {
-      this.errorMessage = 'Vous devez d\'abord confirmer votre venue avant de pouvoir valider votre présence.';
-      setTimeout(() => this.errorMessage = '', 3000);
+      this.notificationService.error(
+        'Erreur de validation',
+        'Vous devez d\'abord confirmer votre venue avant de pouvoir valider votre présence.'
+      );
       return;
     }
 
     // Démarrer la validation
     this.validatingEvents.add(event.id);
     this.errorMessage = '';
-
-    console.log(`🎯 Validation présence pour "${event.name}" avec code: ${code}`);
 
     this.eventService.validateAttendance(event.id, code.trim().toUpperCase()).subscribe({
       next: (response) => {
@@ -594,21 +657,20 @@ export class EventsComponent implements OnInit {
           this.eventValidationCodes[event.id] = '';
           
           // ✅ Message de succès avec DKP
-          this.successMessage = `🎉 Félicitations ! Présence validée avec succès !
+          this.notificationService.success(
+            'Validation réussie',
+            `🎉 Félicitations ! Participation validée avec succès !
             \n💰 Vous avez reçu ${response.dkp_earned} DKP
-            \n🏆 Total DKP: ${response.total_dkp}`;
-          
+            \n🏆 Total DKP: ${response.total_dkp}`
+          );
+
           setTimeout(() => this.successMessage = '', 6000);
           
-          // ✅ Log de succès
-          console.log('✅ Validation réussie:', {
-            event: event.name,
-            dkp_earned: response.dkp_earned,
-            total_dkp: response.total_dkp
-          });
         } else {
-          this.errorMessage = response.message || 'Code de validation incorrect.';
-          setTimeout(() => this.errorMessage = '', 3000);
+          this.notificationService.error(
+            'Erreur de validation',
+            response.message || 'Code de validation incorrect.'
+          );
         }
       },
       error: (error) => {
@@ -618,15 +680,30 @@ export class EventsComponent implements OnInit {
         // Messages d'erreur plus précis
         if (error.status === 400) {
           const errorMsg = error.error?.message || 'Code de validation incorrect.';
-          this.errorMessage = errorMsg;
+          this.notificationService.error(
+            'Erreur de validation',
+            errorMsg
+          );
         } else if (error.status === 403) {
-          this.errorMessage = 'Vous n\'êtes pas autorisé à valider cette présence.';
+          this.notificationService.error(
+            'Erreur de validation',
+            'Vous n\'êtes pas autorisé à valider cette présence.'
+          );
         } else if (error.status === 404) {
-          this.errorMessage = 'Événement introuvable.';
+          this.notificationService.error(
+            'Erreur de validation',
+            'Événement introuvable.'
+          );
         } else if (error.status === 410) {
-          this.errorMessage = 'Cet événement est terminé. La validation n\'est plus possible.';
+          this.notificationService.error(
+            'Erreur de validation',
+            'Cet événement est terminé. La validation n\'est plus possible.'
+          );
         } else {
-          this.errorMessage = 'L\'événement est peut-être terminé ou le code est incorrect.';
+          this.notificationService.error(
+            'Erreur de validation',
+            'L\'événement est peut-être terminé ou le code est incorrect.'
+          );
         }
         
         setTimeout(() => this.errorMessage = '', 4000);
@@ -636,8 +713,10 @@ export class EventsComponent implements OnInit {
   // ✅ SUPPRIMER UN ÉVÉNEMENT (Owner seulement)
   deleteEvent(event: Event) {
     if (!this.isGuildOwner) {
-      this.errorMessage = 'Seul le propriétaire de la guilde peut supprimer des événements.';
-      setTimeout(() => this.errorMessage = '', 3000);
+      this.notificationService.warning(
+        'Action interdite',
+        'Seul le propriétaire de la guilde peut supprimer des événements.'
+      );
       return;
     }
 
@@ -660,8 +739,6 @@ export class EventsComponent implements OnInit {
     this.deletingEvents.add(event.id);
     this.errorMessage = '';
 
-    console.log(`🗑️ Suppression de l'événement "${event.name}" (ID: ${event.id})`);
-
     this.eventService.deleteEvent(event.id).subscribe({
       next: (response) => {
         this.deletingEvents.delete(event.id);
@@ -671,9 +748,10 @@ export class EventsComponent implements OnInit {
           setTimeout(() => {
             this.events = this.events.filter(e => e.id !== event.id);
           }, 500);
-          
-          this.successMessage = `🗑️ Événement "${event.name}" supprimé avec succès !`;
-          setTimeout(() => this.successMessage = '', 4000);
+           this.notificationService.success(
+              `Événement supprimé !`, 
+              `L'événement "${event.name}" a été supprimé avec succès.`
+            );
           
           console.log('✅ Événement supprimé:', event.name);
         } else {
@@ -697,11 +775,20 @@ export class EventsComponent implements OnInit {
         console.error('❌ Erreur suppression événement:', error);
         
         if (error.status === 403) {
-          this.errorMessage = 'Vous n\'êtes pas autorisé à supprimer cet événement.';
+          this.notificationService.error(
+            'Erreur de suppression',
+            'Vous n\'êtes pas autorisé à supprimer cet événement.'
+          );
         } else if (error.status === 404) {
-          this.errorMessage = 'Événement introuvable.';
+          this.notificationService.error(
+            'Erreur de suppression',
+            'Événement introuvable.'
+          );
         } else {
-          this.errorMessage = error.error?.message || 'Erreur lors de la suppression de l\'événement.';
+          this.notificationService.error(
+            'Erreur de suppression',
+            error.error?.message || 'Erreur lors de la suppression de l\'événement.'
+          );
         }
         
         setTimeout(() => this.errorMessage = '', 4000);

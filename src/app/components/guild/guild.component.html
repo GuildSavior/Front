@@ -10,19 +10,7 @@
     </div>
   </div>
 
-  <!-- ✅ Messages d'erreur et de succès -->
-  <div *ngIf="errorMessage" class="alert alert-error">
-    <i class="fas fa-exclamation-triangle mr-2"></i>
-    {{ errorMessage }}
-    <button *ngIf="errorMessage.includes('Premium')" (click)="goToUpgrade()" class="upgrade-btn">
-      Passer au Premium
-    </button>
-  </div>
-
-  <div *ngIf="successMessage" class="alert alert-success">
-    <i class="fas fa-check-circle mr-2"></i>
-    {{ successMessage }}
-  </div>
+  
 
   <!-- Si l'utilisateur n'a pas de guilde -->
   <div *ngIf="!guild && !isCreatingGuild" class="no-guild">

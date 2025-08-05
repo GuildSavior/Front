@@ -10,6 +10,7 @@ import { Guild } from '../../models/guild.model';
 import { GuildInvitationService } from '../../services/invitations/guild-invitation.service';
 import { environment } from '../../../environments/environment';
 import { HttpHeaders, HttpClient } from '@angular/common/http';
+import { NotificationService } from '../../services/notification/notification.service';
 
 @Component({
   selector: 'app-guild',
@@ -57,6 +58,8 @@ export class GuildComponent implements OnInit {
     maxUses: null as number | null,
     expiresInHours: null as number | null
   };
+
+  private notificationService = inject(NotificationService);
 
   // ✅ Propriété pour savoir si l'utilisateur est owner
   get isGuildOwner(): boolean {
@@ -137,11 +140,10 @@ export class GuildComponent implements OnInit {
   // ✅ GESTION CRÉATION DE GUILDE
   showCreateForm() {
     if (!this.planService.isPremiumActive(this.user!)) {
-      this.errorMessage = 'Vous devez avoir un abonnement Premium pour créer une guilde.';
-      setTimeout(() => {
-        this.router.navigate(['/upgrade']);
-      }, 3000);
-      return;
+      this.notificationService.error(
+        'Abonnement Premium requis',
+        'Vous devez avoir un abonnement Premium pour créer une guilde.'
+      );
     }
 
     this.isCreatingGuild = true;
@@ -159,7 +161,10 @@ export class GuildComponent implements OnInit {
 
   createGuild() {
     if (!this.newGuild.name.trim()) {
-      this.errorMessage = 'Le nom de la guilde est obligatoire';
+      this.notificationService.error(
+        'Erreur de création',
+        'Le nom de la guilde est obligatoire.'
+      );
       return;
     }
 
@@ -188,33 +193,46 @@ export class GuildComponent implements OnInit {
           this.isCreatingGuild = false;
           this.isSubmitting = false;
           this.newGuild = { name: '', description: '' };
-          this.successMessage = '🎉 Votre guilde a été créée avec succès !';
-          
-          setTimeout(() => {
-            this.successMessage = '';
-          }, 5000);
+          this.notificationService.success(
+            'Guilde créée',
+            '🎉 Votre guilde a été créée avec succès !'
+          );
         } else {
-          this.errorMessage = response.message || 'Erreur lors de la création';
+          this.notificationService.error(
+            'Erreur de création',
+            response.message || 'Erreur lors de la création'
+          );
           this.isSubmitting = false;
         }
       },
       error: (error) => {
-        console.error('❌ Erreur lors de la création:', error);
         this.isSubmitting = false;
         
         if (error.status === 403) {
-          this.errorMessage = error.error.message || '🔒 Abonnement Premium requis pour créer une guilde';
+          this.notificationService.error(
+            'Erreur d\'accès',
+            error.error.message || '🔒 Abonnement Premium requis pour créer une guilde'
+          );
           setTimeout(() => {
             this.router.navigate(['/upgrade']);
           }, 3000);
         } else if (error.status === 401) {
-          this.errorMessage = '🔐 Veuillez vous reconnecter';
+          this.notificationService.error(
+            'Erreur d\'authentification',
+            '🔐 Veuillez vous reconnecter'
+          );
           this.router.navigate(['/home']);
         } else if (error.status === 422) {
           const validationErrors = error.error.errors || {};
-          this.errorMessage = Object.values(validationErrors).flat().join(', ');
+          this.notificationService.error(
+            'Erreur de validation',
+            Object.values(validationErrors).flat().join(', ')
+          );
         } else {
-          this.errorMessage = error.error.message || '❌ Erreur lors de la création de la guilde. Veuillez réessayer.';
+          this.notificationService.error(
+            'Erreur inconnue',
+            error.error.message || '❌ Erreur lors de la création de la guilde. Veuillez réessayer.'
+          );
         }
       }
     });
@@ -257,7 +275,6 @@ export class GuildComponent implements OnInit {
           }
         } else {
           this.invitations = [];
-          console.warn('⚠️ Pas d\'invitations trouvées');
         }
         
         this.isLoadingInvitations = false;
@@ -268,8 +285,10 @@ export class GuildComponent implements OnInit {
         this.invitations = [];
         
         if (error.status === 403) {
-          this.errorMessage = 'Vous ne possédez aucune guilde.';
-          setTimeout(() => this.errorMessage = '', 3000);
+          this.notificationService.error(
+            'Erreur d\'accès',
+            'Vous ne possédez aucune guilde.'
+          );
         }
       }
     });
@@ -277,8 +296,10 @@ export class GuildComponent implements OnInit {
 
   toggleInvitations() {
     if (!this.isGuildOwner) {
-      this.errorMessage = 'Seul le propriétaire de la guilde peut gérer les invitations.';
-      setTimeout(() => this.errorMessage = '', 3000);
+      this.notificationService.error(
+        'Erreur d\'accès',
+        'Seul le propriétaire de la guilde peut gérer les invitations.'
+      );
       return;
     }
 
@@ -296,7 +317,10 @@ export class GuildComponent implements OnInit {
   // ✅ SIMPLIFIER la méthode createInvitation pour debug
   createInvitation() {
     if (!this.guild || !this.isGuildOwner) {
-      this.errorMessage = 'Vous devez être propriétaire d\'une guilde pour créer des invitations.';
+      this.notificationService.error(
+        'Erreur d\'accès',
+        'Vous devez être propriétaire d\'une guilde pour créer des invitations.'
+      );
       return;
     }
 
@@ -333,31 +357,43 @@ export class GuildComponent implements OnInit {
             maxUses: null, 
             expiresInHours: null 
           };
-          
-          this.successMessage = `✅ ${response.message}`;
-          
-          setTimeout(() => {
-            this.successMessage = '';
-          }, 4000);
+          this.notificationService.success(
+            'Invitation créée avec succès',
+            `✅ ${response.message}`
+          );
         } else {
-          this.errorMessage = response.message || 'Erreur lors de la création de l\'invitation';
+          this.notificationService.error(
+            'Erreur de création',
+            response.message || 'Erreur lors de la création de l\'invitation'
+          );
         }
         
         this.isCreatingInvitation = false;
       },
       error: (error) => {
-        console.error('❌ Erreur création invitation:', error);
         this.isCreatingInvitation = false;
         
         if (error.status === 403) {
-          this.errorMessage = error.error?.message || 'Vous ne possédez aucune guilde.';
+          this.notificationService.error(
+            'Erreur d\'accès',
+            'Vous ne possédez aucune guilde.'
+          );
         } else if (error.status === 422) {
           const validationErrors = error.error?.errors || {};
-          this.errorMessage = Object.values(validationErrors).flat().join(', ');
+          this.notificationService.error(
+            'Erreur de validation',
+            Object.values(validationErrors).flat().join(', ')
+          );
         } else if (error.status === 500) {
-          this.errorMessage = 'Erreur serveur lors de la création de l\'invitation';
+          this.notificationService.error(
+            'Erreur serveur',
+            'Erreur serveur lors de la création de l\'invitation'
+          );
         } else {
-          this.errorMessage = error.error?.message || 'Erreur lors de la création de l\'invitation';
+          this.notificationService.error(
+            'Erreur inconnue',
+            error.error?.message || 'Erreur lors de la création de l\'invitation'
+          );
         }
         
         setTimeout(() => {
@@ -371,12 +407,11 @@ export class GuildComponent implements OnInit {
   copyToClipboard(text: string) {
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(text).then(() => {
-        this.successMessage = '📋 Copié dans le presse-papier !';
-        setTimeout(() => {
-          this.successMessage = '';
-        }, 2000);
+        this.notificationService.success(
+          'Copié dans le presse-papier !',
+          this.successMessage = '📋 Copié dans le presse-papier !'
+        );
       }).catch((error) => {
-        console.error('Erreur clipboard:', error);
         this.fallbackCopyToClipboard(text);
       });
     } else {
@@ -396,16 +431,16 @@ export class GuildComponent implements OnInit {
     
     try {
       document.execCommand('copy');
-      this.successMessage = '📋 Copié dans le presse-papier !';
-      setTimeout(() => {
-        this.successMessage = '';
-      }, 2000);
+      this.notificationService.success(
+        'Copié dans le presse-papier !',
+        this.successMessage = '📋 Copié dans le presse-papier !'
+      );
     } catch (error) {
       console.error('Erreur fallback copy:', error);
-      this.errorMessage = '❌ Impossible de copier. Copiez manuellement.';
-      setTimeout(() => {
-        this.errorMessage = '';
-      }, 3000);
+      this.notificationService.error(
+        'Erreur de copie',
+        '❌ Impossible de copier le texte. Essayez manuellement.'
+      );
     }
     
     document.body.removeChild(textArea);
@@ -440,23 +475,34 @@ export class GuildComponent implements OnInit {
             this.invitations[index].is_active = false;
             this.invitations[index].is_valid = false;
           }
-          
-          this.successMessage = `⏸️ ${response.message}`;
-          setTimeout(() => this.successMessage = '', 3000);
+          this.notificationService.success(
+            'Invitation désactivée',
+            `⏸️ ${response.message}`
+          );
         } else {
-          this.errorMessage = response.message || 'Erreur lors de la désactivation';
-          setTimeout(() => this.errorMessage = '', 3000);
+          this.notificationService.error(
+            'Erreur de désactivation',
+            response.message || 'Erreur lors de la désactivation'
+          );
         }
       },
       error: (error) => {
-        console.error('❌ Erreur désactivation invitation:', error);
         
         if (error.status === 403) {
-          this.errorMessage = 'Vous ne possédez aucune guilde.';
+          this.notificationService.error(
+            'Erreur de désactivation',
+            this.errorMessage = 'Vous ne possédez aucune guilde.'
+          );
         } else if (error.status === 404) {
-          this.errorMessage = 'Invitation introuvable.';
+          this.notificationService.error(
+            'Erreur de désactivation',
+            this.errorMessage = 'Invitation introuvable.'
+          );
         } else {
-          this.errorMessage = error.error?.message || 'Erreur lors de la désactivation';
+          this.notificationService.error(
+            'Erreur de désactivation',
+            this.errorMessage = error.error?.message || 'Erreur lors de la désactivation'
+          );
         }
         
         setTimeout(() => this.errorMessage = '', 3000);
@@ -490,11 +536,15 @@ export class GuildComponent implements OnInit {
         if (response.success) {
           this.invitations = this.invitations.filter(inv => inv.id !== invitationId);
           
-          this.successMessage = `🗑️ ${response.message}`;
-          setTimeout(() => this.successMessage = '', 3000);
+          this.notificationService.success(
+            'Invitation supprimée',
+            `🗑️ ${response.message}`
+          );
         } else {
-          this.errorMessage = response.message || 'Erreur lors de la suppression';
-          setTimeout(() => this.errorMessage = '', 3000);
+          this.notificationService.error(
+            'Erreur de suppression',
+            response.message || 'Erreur lors de la suppression'
+          );
         }
       },
       error: (error) => {

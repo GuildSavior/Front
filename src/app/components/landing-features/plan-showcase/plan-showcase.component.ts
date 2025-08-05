@@ -221,4 +221,7 @@ export class PlanShowcaseComponent implements OnInit {
     }
     return null;
   }
+  goDashboard() {
+    this.router.navigate(['/dashboard']);
+  }
 }
