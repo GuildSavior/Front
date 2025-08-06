@@ -170,11 +170,12 @@
 
         <!-- Actions -->
         <div class="member-actions">
-          <button class="action-btn view" title="Voir le profil">
+          <button 
+            class="action-btn view" 
+            title="Voir le profil"
+            [routerLink]="['/player', member.player?.id]"
+            *ngIf="member.player">
             <i class="fas fa-eye"></i>
-          </button>
-          <button class="action-btn message" title="Envoyer un message">
-            <i class="fas fa-comment"></i>
           </button>
         </div>
       </div>
