@@ -71,32 +71,6 @@
       </div>
     </div>
 
-    <!-- ✅ CARD 2: Informations utilisateur -->
-    <div class="dashboard-card user-info-card">
-      <div class="card-header">
-        <div class="card-icon user-icon">
-          <i class="fas fa-user"></i>
-        </div>
-        <div class="card-title">
-          <h3>Informations personnelles</h3>
-          <p>Vos données Discord</p>
-        </div>
-      </div>
-
-      <div class="card-content">
-        <div class="info-grid">
-          <div class="info-item">
-            <span class="info-label">Email</span>
-            <span class="info-value">{{ user.email }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Discord ID</span>
-            <span class="info-value">{{ user.discord_id }}</span>
-          </div>
-        </div>
-
-      </div>
-    </div>
 
     <!-- ✅ CARD 3: Profil de personnage -->
     <div class="dashboard-card character-card">
@@ -106,7 +80,7 @@
         </div>
         <div class="card-title">
           <h3>Mon Personnage</h3>
-          <p>Votre profil de jeu WoW</p>
+          <p>Votre profil de jeu Throne and liberty</p>
         </div>
         
         <!-- Actions du personnage -->
@@ -195,7 +169,7 @@
                   id="player-name"
                   type="text" 
                   [(ngModel)]="playerForm.name"
-                  placeholder="Ex: Legolas"
+                  placeholder="Ex: Adentus"
                   maxlength="50"
                   class="input-modern">
               </div>
@@ -257,21 +231,7 @@
         </div>
 
         <!-- ✅ Message d'aide -->
-        <div class="help-section" *ngIf="!hasPlayerProfile && !isEditingPlayer">
-          <div class="help-content">
-            <div class="help-icon">
-              <i class="fas fa-info-circle"></i>
-            </div>
-            <div class="help-text">
-              <h4>Créez votre profil</h4>
-              <p>Configurez votre personnage WoW pour suivre vos DKP et participer aux événements de guilde.</p>
-            </div>
-          </div>
-          <button class="btn-create" (click)="isEditingPlayer = true">
-            <i class="fas fa-plus"></i>
-            Créer mon profil
-          </button>
-        </div>
+        
       </div>
     </div>
 
