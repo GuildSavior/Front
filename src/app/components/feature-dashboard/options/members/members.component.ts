@@ -1,11 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router'; // ✅ AJOUTER
 import { GuildService } from '../../../../services/guild/guild.service';
 
 @Component({
   selector: 'app-members',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule], // ✅ AJOUTER RouterModule
   templateUrl: './members.component.html',
   styleUrls: ['./members.component.scss']
 })

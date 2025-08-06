@@ -14,6 +14,7 @@ import { LandingPageComponent } from './components/landing-features/landing/land
 import { MembersComponent } from './components/feature-dashboard/options/members/members.component';
 import { JoinGuildComponent } from './components/join-guild/join-guild.component';
 import { EventsComponent } from './components/feature-dashboard/options/events/events.component';
+import { PlayerProfileComponent } from './components/feature-dashboard/player-profile/player-profile.component';
 
 export const routes: Routes = [
   // Routes sans layout
@@ -42,7 +43,8 @@ export const routes: Routes = [
       { path: 'guild', component: GuildComponent },
       { path: 'members', component: MembersComponent },
       { path: 'events', component: EventsComponent },
-      { path: 'join-guild/:code', component: JoinGuildComponent }
+      { path: 'join-guild/:code', component: JoinGuildComponent },
+      { path: 'player/:id', component: PlayerProfileComponent }
     ]
   },
 

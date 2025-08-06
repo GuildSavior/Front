@@ -12,6 +12,7 @@ import { Player, PlayerClass } from '../../../models/player.model'; // ✅ CORRI
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../../../environments/environment';
 import { NotificationService } from '../../../services/notification/notification.service';
+import { GalleryService, UserImage } from '../../../services/gallery/gallery.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -41,6 +42,7 @@ export class DashboardComponent implements OnInit {
   playerService = inject(PlayerService);
   route = inject(ActivatedRoute);
   router = inject(Router);
+  galleryService = inject(GalleryService);
   
   // ✅ NOUVELLES propriétés pour le profil joueur
   hasPlayerProfile = false;
@@ -74,6 +76,29 @@ export class DashboardComponent implements OnInit {
 
   // ✅ NOUVEAU: Propriété pour l'upgrade
   isUpgrading = false;
+
+  // ✅ NOUVELLES propriétés pour la galerie
+  userImages: UserImage[] = [];
+  isLoadingGallery = false;
+  galleryViewMode: 'grid' | 'list' = 'grid';
+  
+  // Modal upload
+  showUploadModal = false;
+  selectedFile: File | null = null;
+  previewUrl: string | null = null;
+  isDragOver = false;
+  isUploading = false;
+  
+  uploadForm = {
+    title: '',
+    description: '',
+    isPublic: true
+  };
+  
+  // Modal image
+  showImageModal = false;
+  selectedImage: UserImage | null = null;
+
   private notificationService = inject(NotificationService);
   ngOnInit() {
     // ✅ Debug en développement
@@ -135,6 +160,7 @@ export class DashboardComponent implements OnInit {
         
         this.loadPlayerProfile();
         this.handleQueryParams();
+        this.loadGallery();
       },
       error: (error) => {
         console.error('❌ Erreur récupération utilisateur:', error);
@@ -215,6 +241,29 @@ export class DashboardComponent implements OnInit {
         if (environment.enableDebugLogs) {
           console.log('ℹ️ Pas de profil joueur encore créé');
         }
+      }
+    });
+  }
+
+  // ✅ NOUVELLE méthode pour charger la galerie
+  loadGallery() {
+    this.isLoadingGallery = true;
+    
+    this.galleryService.getMyImages().subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.userImages = response.images;
+          console.log('✅ Galerie chargée:', this.userImages.length, 'images');
+        }
+        this.isLoadingGallery = false;
+      },
+      error: (error) => {
+        console.error('❌ Erreur chargement galerie:', error);
+        this.notificationService.error(
+          'Erreur galerie',
+          'Impossible de charger votre galerie'
+        );
+        this.isLoadingGallery = false;
       }
     });
   }
@@ -488,5 +537,226 @@ export class DashboardComponent implements OnInit {
 
   goToSettings() {
     this.router.navigate(['/auctions']);
+  }
+
+  // ✅ Calculer le niveau de participation (0-100%)
+  getParticipationLevel(): number {
+    if (!this.currentPlayer) return 0;
+    
+    const events = this.currentPlayer.events_joined || 0;
+    // Considérer 20 événements comme 100% de participation
+    const maxEvents = 20;
+    const percentage = Math.min((events / maxEvents) * 100, 100);
+    
+    return Math.round(percentage);
+  }
+
+  // ✅ Calculer la moyenne DKP par événement
+  getDkpPerEvent(): number {
+    if (!this.currentPlayer) return 0;
+    
+    const dkp = this.currentPlayer.dkp || 0;
+    const events = this.currentPlayer.events_joined || 0;
+    
+    if (events === 0) return 0;
+    
+    return Math.round(dkp / events);
+  }
+
+  // ✅ Obtenir le rang de participation
+  getParticipationRank(): string {
+    if (!this.currentPlayer) return 'Aucun';
+    
+    const events = this.currentPlayer.events_joined || 0;
+    
+    if (events === 0) return 'Nouveau';
+    if (events < 5) return 'Débutant';
+    if (events < 15) return 'Actif';
+    if (events < 30) return 'Vétéran';
+    return 'Expert';
+  }
+
+  // ✅ Scroll vers la card personnage
+  scrollToCharacterCard() {
+    const characterCard = document.querySelector('.character-card');
+    if (characterCard) {
+      characterCard.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+    }
+  }
+
+  // ✅ MODAL UPLOAD
+  openUploadModal() {
+    this.showUploadModal = true;
+    this.resetUploadForm();
+  }
+
+  closeUploadModal() {
+    this.showUploadModal = false;
+    this.resetUploadForm();
+  }
+
+  resetUploadForm() {
+    this.selectedFile = null;
+    this.previewUrl = null;
+    this.uploadForm = {
+      title: '',
+      description: '',
+      isPublic: true
+    };
+  }
+
+  // ✅ GESTION DRAG & DROP
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    this.isDragOver = true;
+  }
+
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    this.isDragOver = false;
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    this.isDragOver = false;
+    
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      this.handleFileSelection(files[0]);
+    }
+  }
+
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.handleFileSelection(input.files[0]);
+    }
+  }
+
+  handleFileSelection(file: File) {
+    // Vérifier le type de fichier
+    if (!file.type.startsWith('image/')) {
+      this.notificationService.error(
+        'Fichier invalide',
+        'Veuillez sélectionner un fichier image'
+      );
+      return;
+    }
+
+    // Vérifier la taille (10MB max)
+    if (file.size > 10 * 1024 * 1024) {
+      this.notificationService.error(
+        'Fichier trop volumineux',
+        'La taille maximum autorisée est de 10MB'
+      );
+      return;
+    }
+
+    this.selectedFile = file;
+    
+    // Créer l'aperçu
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.previewUrl = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removeSelectedFile() {
+    this.selectedFile = null;
+    this.previewUrl = null;
+  }
+
+  formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  uploadImage() {
+    if (!this.selectedFile) return;
+
+    this.isUploading = true;
+
+    this.galleryService.uploadImage(
+      this.selectedFile,
+      this.uploadForm.title || undefined,
+      this.uploadForm.description || undefined,
+      this.uploadForm.isPublic
+    ).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.notificationService.success(
+            'Image uploadée',
+            '✅ Votre image a été ajoutée à votre galerie'
+          );
+          
+          // Ajouter la nouvelle image au début de la liste
+          this.userImages.unshift(response.image);
+          
+          this.closeUploadModal();
+        }
+        this.isUploading = false;
+      },
+      error: (error) => {
+        console.error('❌ Erreur upload:', error);
+        this.notificationService.error(
+          'Erreur upload',
+          error.error?.message || 'Erreur lors de l\'upload de l\'image'
+        );
+        this.isUploading = false;
+      }
+    });
+  }
+
+  // ✅ MODAL IMAGE
+  openImageModal(image: UserImage) {
+    this.selectedImage = image;
+    this.showImageModal = true;
+  }
+
+  closeImageModal() {
+    this.showImageModal = false;
+    this.selectedImage = null;
+  }
+
+  // ✅ SUPPRESSION IMAGE
+  deleteImage(image: UserImage) {
+    const imageName = image.title || image.original_name;
+    
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer "${imageName}" ?\n\nCette action est irréversible.`)) {
+      return;
+    }
+
+    this.galleryService.deleteImage(image.id).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.notificationService.success(
+            'Image supprimée',
+            '🗑️ L\'image a été supprimée de votre galerie'
+          );
+          
+          // Retirer l'image de la liste
+          this.userImages = this.userImages.filter(img => img.id !== image.id);
+          
+          // Fermer le modal si c'était l'image affichée
+          if (this.selectedImage?.id === image.id) {
+            this.closeImageModal();
+          }
+        }
+      },
+      error: (error) => {
+        console.error('❌ Erreur suppression:', error);
+        this.notificationService.error(
+          'Erreur suppression',
+          error.error?.message || 'Impossible de supprimer l\'image'
+        );
+      }
+    });
   }
 }

@@ -1,0 +1,363 @@
+<div class="player-profile-container">
+  <!-- ✅ Header avec bouton retour -->
+  <div class="profile-header">
+    <button class="back-btn" (click)="goBack()">
+      <i class="fas fa-arrow-left"></i>
+      Retour aux membres
+    </button>
+    <h1 *ngIf="isLoading">Chargement...</h1>
+  </div>
+
+  <!-- ✅ Loading -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p>Chargement du profil...</p>
+  </div>
+
+  <!-- ✅ Error -->
+  <div *ngIf="errorMessage && !isLoading" class="error-state">
+    <div class="error-content">
+      <i class="fas fa-exclamation-triangle"></i>
+      <h3>Erreur</h3>
+      <p>{{ errorMessage }}</p>
+      <button class="btn-retry" (click)="loadPlayerProfile()">
+        <i class="fas fa-refresh"></i>
+        Réessayer
+      </button>
+    </div>
+  </div>
+
+  <!-- ✅ Profil du joueur -->
+  <div *ngIf="!isLoading && !errorMessage && player" class="profile-content">
+    
+    <!-- ✅ Carte principale du personnage -->
+    <div class="character-main-card">
+      <div class="character-header">
+        <div class="character-avatar">
+          <!-- ✅ REMPLACER l'icône par l'avatar Discord -->
+          <div class="avatar-ring" [style.border-color]="getClassColor(player.class)">
+            <img 
+              *ngIf="player.user?.avatar" 
+              [src]="player.user.avatar" 
+              [alt]="player.user.username"
+              class="discord-avatar">
+            <i 
+              *ngIf="!player.user?.avatar" 
+              class="fas fa-user-circle fallback-icon"></i>
+          </div>
+          <div class="class-badge" [style.background-color]="getClassColor(player.class)">
+            {{ getClassDisplayName(player.class) }}
+          </div>
+        </div>
+        
+        <div class="character-info">
+          <h2 class="character-name">{{ player.name }}</h2>
+          <!-- ✅ AJOUTER le nom Discord -->
+          <div class="discord-username">
+            <i class="fab fa-discord"></i>
+            {{ player.user.username }}
+          </div>
+          <div class="character-level">
+            <i class="fas fa-level-up-alt"></i>
+            Niveau {{ player.level }}
+          </div>
+          <div class="character-class" [style.color]="getClassColor(player.class)">
+            {{ getClassDisplayName(player.class) }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ Grille des statistiques -->
+    <div class="stats-grid">
+      
+      <!-- DKP Card -->
+      <div class="stat-card dkp-card">
+        <div class="stat-icon">
+          <i class="fas fa-coins"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ player.dkp || 0 }}</div>
+          <div class="stat-label">Points DKP</div>
+          <div class="stat-description">Points de présences</div>
+        </div>
+      </div>
+
+      <!-- Events Card -->
+      <div class="stat-card events-card">
+        <div class="stat-icon">
+          <i class="fas fa-calendar-check"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ player.events_joined || 0 }}</div>
+          <div class="stat-label">Événements</div>
+          <div class="stat-description">Raids ou autres rejoints</div>
+        </div>
+      </div>
+
+      <!-- Level Progress Card -->
+      <div class="stat-card level-card">
+        <div class="stat-icon">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ ((player.level / 55) * 100) | number:'1.0-1' }}%</div>
+          <div class="stat-label">Progression</div>
+          <div class="stat-description">Niveau {{ player.level }}/55</div>
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="(player.level / 55) * 100"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Performance Card -->
+      <div class="stat-card performance-card">
+        <div class="stat-icon">
+          <i class="fas fa-trophy"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ getPerformanceScore() }}</div>
+          <div class="stat-label">Score</div>
+          <div class="stat-description">Performance globale</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ Informations détaillées -->
+    <div class="details-section">
+      <h3>Informations détaillées</h3>
+      
+      <div class="details-grid">
+        <div class="detail-item">
+          <div class="detail-label">
+            <i class="fas fa-user"></i>
+            Nom du personnage
+          </div>
+          <div class="detail-value">{{ player.name }}</div>
+        </div>
+
+        <div class="detail-item">
+          <div class="detail-label">
+            <i class="fas fa-level-up-alt"></i>
+            Niveau actuel
+          </div>
+          <div class="detail-value">{{ player.level }}</div>
+        </div>
+
+        <div class="detail-item">
+          <div class="detail-label">
+            <i class="fas fa-shield-alt"></i>
+            Classe/Rôle
+          </div>
+          <div class="detail-value" [style.color]="getClassColor(player.class)">
+            {{ getClassDisplayName(player.class) }}
+          </div>
+        </div>
+
+        <div class="detail-item">
+          <div class="detail-label">
+            <i class="fas fa-coins"></i>
+            Points DKP
+          </div>
+          <div class="detail-value">{{ player.dkp || 0 }}</div>
+        </div>
+
+        <div class="detail-item">
+          <div class="detail-label">
+            <i class="fas fa-calendar-plus"></i>
+            Événements rejoints
+          </div>
+          <div class="detail-value">{{ player.events_joined || 0 }}</div>
+        </div>
+
+        <div class="detail-item" *ngIf="player.created_at">
+          <div class="detail-label">
+            <i class="fas fa-clock"></i>
+            Profil créé le
+          </div>
+          <div class="detail-value">{{ player.created_at | date:'dd/MM/yyyy' }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ Badges de réalisations (optionnel) -->
+    <div class="achievements-section">
+      <h3>Réalisations</h3>
+      <div class="achievements-grid">
+        
+        <div class="achievement-badge" [class.earned]="player.level >= 50">
+          <i class="fas fa-star"></i>
+          <span>Vétéran</span>
+          <small>Niveau 50+</small>
+        </div>
+
+        <div class="achievement-badge" [class.earned]="(player.dkp || 0) >= 500">
+          <i class="fas fa-coins"></i>
+          <span>Collectionneur</span>
+          <small>500+ DKP</small>
+        </div>
+
+        <div class="achievement-badge" [class.earned]="(player.events_joined || 0) >= 10">
+          <i class="fas fa-users"></i>
+          <span>Fidèle</span>
+          <small>10+ raids</small>
+        </div>
+
+        <div class="achievement-badge" [class.earned]="player.level === 55">
+          <i class="fas fa-crown"></i>
+          <span>Niveau Max</span>
+          <small>Niveau 55</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ Galerie d'images du joueur -->
+    <div *ngIf="player.user?.images && player.user.images.length > 0" class="gallery-section">
+      <div class="gallery-header">
+        <h3>
+          <i class="fas fa-images"></i>
+          Galerie de {{ player.name }}
+        </h3>
+        <div class="gallery-stats">
+          <span class="image-count">{{ player.user.images_count || player.user.images.length }} image{{ (player.user.images_count || player.user.images.length) > 1 ? 's' : '' }}</span>
+          <div class="view-toggle">
+            <button 
+              class="toggle-btn" 
+              [class.active]="galleryViewMode === 'grid'"
+              (click)="galleryViewMode = 'grid'">
+              <i class="fas fa-th"></i>
+            </button>
+            <button 
+              class="toggle-btn" 
+              [class.active]="galleryViewMode === 'masonry'"
+              (click)="galleryViewMode = 'masonry'">
+              <i class="fas fa-th-large"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ✅ Vue en grille classique -->
+      <div *ngIf="galleryViewMode === 'grid'" class="gallery-grid">
+        <div 
+          *ngFor="let image of player.user.images; let i = index" 
+          class="gallery-item"
+          [style.animation-delay]="i * 0.1 + 's'"
+          (click)="openImageModal(image)">
+          
+          <div class="image-container">
+            <img [src]="image.url" [alt]="image.title || image.original_name" loading="lazy">
+            <div class="image-overlay">
+              <div class="overlay-actions">
+                <button class="overlay-btn view-btn" (click)="$event.stopPropagation(); openImageModal(image)">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button class="overlay-btn expand-btn" (click)="$event.stopPropagation(); openImageModal(image)">
+                  <i class="fas fa-expand-arrows-alt"></i>
+                </button>
+              </div>
+              <div class="image-info">
+                <div class="image-title">{{ image.title || image.original_name }}</div>
+                <div class="image-meta" *ngIf="image.created_at">
+                  <span class="upload-date">{{ image.created_at | date:'dd/MM/yyyy' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ✅ Vue en mosaïque (masonry) -->
+      <div *ngIf="galleryViewMode === 'masonry'" class="gallery-masonry">
+        <div 
+          *ngFor="let image of player.user.images; let i = index" 
+          class="masonry-item"
+          [style.animation-delay]="i * 0.1 + 's'"
+          (click)="openImageModal(image)">
+          
+          <div class="masonry-container">
+            <img [src]="image.url" [alt]="image.title || image.original_name" loading="lazy">
+            <div class="masonry-overlay">
+              <div class="overlay-content">
+                <h4>{{ image.title || image.original_name }}</h4>
+                <p *ngIf="image.description">{{ image.description }}</p>
+                <div class="overlay-actions">
+                  <button class="action-btn" (click)="$event.stopPropagation(); openImageModal(image)">
+                    <i class="fas fa-expand-arrows-alt"></i>
+                    Voir en grand
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ✅ Message si pas d'images récentes mais des images existantes -->
+      <div *ngIf="player.user.recent_images && player.user.recent_images.length > 0 && (!player.user.images || player.user.images.length === 0)" class="recent-images-notice">
+        <p>
+          <i class="fas fa-info-circle"></i>
+          Ce joueur a {{ player.user.images_count }} image(s) mais seules les images publiques récentes sont affichées ici.
+        </p>
+      </div>
+    </div>
+
+    <!-- ✅ Message si aucune image -->
+    <div *ngIf="!player.user?.images || player.user.images.length === 0" class="no-gallery-section">
+      <div class="no-gallery-content">
+        <i class="fas fa-camera"></i>
+        <h4>Aucune image publique</h4>
+        <p>{{ player.name }} n'a pas encore partagé d'images publiques.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ✅ MODAL de visualisation d'image -->
+<div *ngIf="showImageModal && selectedImage" class="image-modal-overlay" (click)="closeImageModal()">
+  <div class="image-modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ selectedImage.title || selectedImage.original_name }}</h3>
+      <button class="modal-close" (click)="closeImageModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="image-display">
+        <img [src]="selectedImage.url" [alt]="selectedImage.title" class="full-image">
+      </div>
+      
+      <div class="image-details" *ngIf="selectedImage.description || selectedImage.created_at">
+        <div *ngIf="selectedImage.description" class="detail-row">
+          <span class="detail-label">Description:</span>
+          <span class="detail-value">{{ selectedImage.description }}</span>
+        </div>
+        <div *ngIf="selectedImage.created_at" class="detail-row">
+          <span class="detail-label">Uploadé le:</span>
+          <span class="detail-value">{{ selectedImage.created_at | date:'dd/MM/yyyy à HH:mm' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ Navigation entre images -->
+    <div class="modal-navigation" *ngIf="player.user.images.length > 1">
+      <button 
+        class="nav-btn prev-btn" 
+        [disabled]="getCurrentImageIndex() === 0"
+        (click)="navigateImage('prev')">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <span class="image-counter">
+        {{ getCurrentImageIndex() + 1 }} / {{ player.user.images.length }}
+      </span>
+      <button 
+        class="nav-btn next-btn" 
+        [disabled]="getCurrentImageIndex() === player.user.images.length - 1"
+        (click)="navigateImage('next')">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+</div>
