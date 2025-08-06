@@ -72,7 +72,7 @@
     </div>
 
 
-    <!-- ✅ CARD 3: Profil de personnage -->
+    <!-- ✅ CARD 3: Profil de personnage (sans DKP) -->
     <div class="dashboard-card character-card">
       <div class="card-header">
         <div class="card-icon character-icon">
@@ -80,7 +80,7 @@
         </div>
         <div class="card-title">
           <h3>Mon Personnage</h3>
-          <p>Votre profil de jeu Throne and liberty</p>
+          <p>Votre profil de jeu Throne and Liberty</p>
         </div>
         
         <!-- Actions du personnage -->
@@ -95,7 +95,7 @@
       </div>
 
       <div class="card-content">
-        <!-- ✅ Affichage du profil existant -->
+        <!-- ✅ Affichage du profil existant (SANS DKP et événements) -->
         <div class="character-display" *ngIf="hasPlayerProfile && !isEditingPlayer">
           <div class="character-stats">
             <div class="stat-row">
@@ -104,7 +104,7 @@
                   <i class="fas fa-user-circle"></i>
                 </div>
                 <div class="stat-info">
-                  <span class="stat-label">Nom</span>
+                  <span class="stat-label">Nom du personnage</span>
                   <span class="stat-value">{{ currentPlayer.name }}</span>
                 </div>
               </div>
@@ -117,7 +117,7 @@
                 </div>
                 <div class="stat-info">
                   <span class="stat-label">Niveau</span>
-                  <span class="stat-value">{{ currentPlayer.level }}</span>
+                  <span class="stat-value level-value">{{ currentPlayer.level }}</span>
                 </div>
               </div>
 
@@ -133,32 +133,10 @@
                 </div>
               </div>
             </div>
-
-            <div class="stat-row">
-              <div class="stat-item">
-                <div class="stat-icon dkp-icon">
-                  <i class="fas fa-coins"></i>
-                </div>
-                <div class="stat-info">
-                  <span class="stat-label">DKP</span>
-                  <span class="stat-value dkp-value">{{ currentPlayer.dkp || 0 }}</span>
-                </div>
-              </div>
-
-              <div class="stat-item">
-                <div class="stat-icon">
-                  <i class="fas fa-calendar-check"></i>
-                </div>
-                <div class="stat-info">
-                  <span class="stat-label">Événements</span>
-                  <span class="stat-value">{{ currentPlayer.events_joined || 0 }}</span>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
-        <!-- ✅ Formulaire de création/modification -->
+        <!-- ✅ Formulaire de création/modification (inchangé) -->
         <div class="character-form" *ngIf="!hasPlayerProfile || isEditingPlayer">
           <div class="form-modern">
             <div class="input-group">
@@ -235,7 +213,122 @@
       </div>
     </div>
 
-    <!-- ✅ CARD 4: Actions rapides -->
+    <!-- ✅ NOUVELLE CARD 4: DKP & Événements -->
+    <div class="dashboard-card dkp-card">
+      <div class="card-header">
+        <div class="card-icon dkp-icon">
+          <i class="fas fa-coins"></i>
+        </div>
+        <div class="card-title">
+          <h3>DKP & Activité</h3>
+          <p>Vos points et participation aux événements</p>
+        </div>
+        <div class="card-actions" *ngIf="hasPlayerProfile">
+          <button class="action-btn info-btn" title="Qu'est-ce que le DKP ?">
+            <i class="fas fa-question-circle"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <!-- ✅ Si le joueur a un profil -->
+        <div *ngIf="hasPlayerProfile" class="dkp-content">
+          
+          <!-- ✅ Statistiques principales -->
+          <div class="dkp-stats">
+            <div class="dkp-main-stat">
+              <div class="dkp-value-container">
+                <div class="dkp-icon-large">
+                  <i class="fas fa-coins"></i>
+                </div>
+                <div class="dkp-value-info">
+                  <div class="dkp-number">{{ currentPlayer.dkp || 0 }}</div>
+                  <div class="dkp-label">Points DKP</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="events-stat">
+              <div class="events-value-container">
+                <div class="events-icon-large">
+                  <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="events-value-info">
+                  <div class="events-number">{{ currentPlayer.events_joined || 0 }}</div>
+                  <div class="events-label">Événements</div>
+                  <div class="events-subtitle">Raids rejoints</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ✅ Barre de progression de participation -->
+          <div class="participation-section">
+            <div class="participation-header">
+              <h4>Niveau de participation</h4>
+              <span class="participation-percentage">{{ getParticipationLevel() }}%</span>
+            </div>
+            <div class="participation-bar">
+              <div class="participation-fill" [style.width.%]="getParticipationLevel()"></div>
+            </div>
+            <div class="participation-badges">
+              <div class="badge" [class.earned]="(currentPlayer.events_joined || 0) >= 1">
+                <i class="fas fa-play"></i>
+                <span>Débutant</span>
+              </div>
+              <div class="badge" [class.earned]="(currentPlayer.events_joined || 0) >= 5">
+                <i class="fas fa-star"></i>
+                <span>Actif</span>
+              </div>
+              <div class="badge" [class.earned]="(currentPlayer.events_joined || 0) >= 15">
+                <i class="fas fa-crown"></i>
+                <span>Vétéran</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ✅ Résumé des performances -->
+          <div class="performance-summary">
+            <div class="performance-item">
+              <div class="perf-icon">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              <div class="perf-content">
+                <div class="perf-label">Moyenne DKP/Événement</div>
+                <div class="perf-value">{{ getDkpPerEvent() }}</div>
+              </div>
+            </div>
+
+            <div class="performance-item">
+              <div class="perf-icon">
+                <i class="fas fa-trophy"></i>
+              </div>
+              <div class="perf-content">
+                <div class="perf-label">Rang de participation</div>
+                <div class="perf-value">{{ getParticipationRank() }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ✅ Si pas de profil joueur -->
+        <div *ngIf="!hasPlayerProfile" class="no-profile-dkp">
+          <div class="no-profile-content">
+            <div class="no-profile-icon">
+              <i class="fas fa-user-plus"></i>
+            </div>
+            <h4>Créez votre profil</h4>
+            <p>Créez d'abord votre profil de personnage pour commencer à accumuler des points DKP et participer aux événements.</p>
+            <button class="btn-create-profile" (click)="scrollToCharacterCard()">
+              <i class="fas fa-arrow-up"></i>
+              Créer mon profil
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ CARD 5: Actions rapides -->
     <div class="dashboard-card actions-card">
       <div class="card-header">
         <div class="card-icon actions-icon">
@@ -285,7 +378,7 @@
       </div>
     </div>
 
-    <!-- ✅ CARD 5: Statistiques -->
+    <!-- ✅ CARD 6: Statistiques -->
     <div class="dashboard-card stats-card">
       <div class="card-header">
         <div class="card-icon stats-icon">
@@ -326,6 +419,112 @@
       </div>
     </div>
 
+    <!-- ✅ NOUVELLE CARD: Ma Galerie -->
+    <div class="dashboard-card gallery-card full-width">
+      <div class="card-header">
+        <div class="card-icon gallery-icon">
+          <i class="fas fa-images"></i>
+        </div>
+        <div class="card-title">
+          <h3>Ma Galerie</h3>
+          <p>Gérez vos images et captures d'écran</p>
+        </div>
+        <div class="card-actions">
+          <button class="action-btn upload-btn" (click)="openUploadModal()">
+            <i class="fas fa-plus"></i>
+          </button>
+          <button class="action-btn grid-view-btn" [class.active]="galleryViewMode === 'grid'" (click)="galleryViewMode = 'grid'">
+            <i class="fas fa-th"></i>
+          </button>
+          <button class="action-btn list-view-btn" [class.active]="galleryViewMode === 'list'" (click)="galleryViewMode = 'list'">
+            <i class="fas fa-list"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <!-- ✅ Loading état -->
+        <div *ngIf="isLoadingGallery" class="gallery-loading">
+          <div class="loading-spinner"></div>
+          <p>Chargement de votre galerie...</p>
+        </div>
+
+        <!-- ✅ État vide -->
+        <div *ngIf="!isLoadingGallery && userImages.length === 0" class="gallery-empty">
+          <div class="empty-icon">
+            <i class="fas fa-camera"></i>
+          </div>
+          <h4>Aucune image</h4>
+          <p>Commencez par uploader votre première image !</p>
+          <button class="btn-upload-first" (click)="openUploadModal()">
+            <i class="fas fa-plus"></i>
+            Ajouter une image
+          </button>
+        </div>
+
+        <!-- ✅ Galerie en mode grille -->
+        <div *ngIf="!isLoadingGallery && userImages.length > 0 && galleryViewMode === 'grid'" class="gallery-grid">
+          <div 
+            *ngFor="let image of userImages; let i = index" 
+            class="gallery-item"
+            [style.animation-delay]="i * 0.1 + 's'"
+            (click)="openImageModal(image)">
+            
+            <div class="image-container">
+              <img [src]="image.url" [alt]="image.title || image.original_name" loading="lazy">
+              <div class="image-overlay">
+                <div class="overlay-actions">
+                  <button class="overlay-btn view-btn" (click)="$event.stopPropagation(); openImageModal(image)">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="overlay-btn delete-btn" (click)="$event.stopPropagation(); deleteImage(image)">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+                <div class="image-info">
+                  <div class="image-title">{{ image.title || image.original_name }}</div>
+                  <div class="image-meta">
+                    <span class="visibility" [class.public]="image.is_public">
+                      <i class="fas" [class.fa-globe]="image.is_public" [class.fa-lock]="!image.is_public"></i>
+                      {{ image.is_public ? 'Public' : 'Privé' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ✅ Galerie en mode liste -->
+        <div *ngIf="!isLoadingGallery && userImages.length > 0 && galleryViewMode === 'list'" class="gallery-list">
+          <div *ngFor="let image of userImages; let i = index" class="list-item" [style.animation-delay]="i * 0.05 + 's'">
+            <div class="list-thumbnail">
+              <img [src]="image.url" [alt]="image.title || image.original_name" loading="lazy">
+            </div>
+            <div class="list-content">
+              <div class="list-title">{{ image.title || image.original_name }}</div>
+              <div class="list-description">{{ image.description || 'Aucune description' }}</div>
+              <div class="list-meta">
+                <span class="upload-date">{{ image.created_at | date:'dd/MM/yyyy à HH:mm' }}</span>
+                <span class="visibility" [class.public]="image.is_public">
+                  <i class="fas" [class.fa-globe]="image.is_public" [class.fa-lock]="!image.is_public"></i>
+                  {{ image.is_public ? 'Public' : 'Privé' }}
+                </span>
+              </div>
+            </div>
+            <div class="list-actions">
+              <button class="list-action-btn view-btn" (click)="openImageModal(image)">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button class="list-action-btn delete-btn" (click)="deleteImage(image)">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -345,5 +544,157 @@
   <div class="notification-content">
     <i class="fas fa-check-circle"></i>
     <span>{{ notification }}</span>
+  </div>
+</div>
+
+<!-- ✅ MODAL UPLOAD -->
+<div *ngIf="showUploadModal" class="modal-overlay" (click)="closeUploadModal()">
+  <div class="modal-content upload-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Ajouter une image</h3>
+      <button class="modal-close" (click)="closeUploadModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <!-- ✅ Zone de drop -->
+      <div 
+        class="upload-dropzone"
+        [class.dragover]="isDragOver"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)"
+        (drop)="onDrop($event)"
+        (click)="fileInput.click()">
+        
+        <div *ngIf="!selectedFile" class="dropzone-content">
+          <div class="dropzone-icon">
+            <i class="fas fa-cloud-upload-alt"></i>
+          </div>
+          <h4>Glissez votre image ici</h4>
+          <p>ou cliquez pour parcourir</p>
+          <div class="dropzone-formats">
+            <span>Formats acceptés: JPG, PNG, GIF, WebP</span>
+            <span>Taille max: 10MB</span>
+          </div>
+        </div>
+
+        <div *ngIf="selectedFile" class="file-preview">
+          <img [src]="previewUrl" alt="Aperçu" class="preview-image">
+          <div class="file-info">
+            <div class="file-name">{{ selectedFile.name }}</div>
+            <div class="file-size">{{ formatFileSize(selectedFile.size) }}</div>
+          </div>
+          <button class="remove-file" (click)="removeSelectedFile(); $event.stopPropagation()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <input 
+          #fileInput
+          type="file" 
+          accept="image/*" 
+          (change)="onFileSelected($event)"
+          style="display: none;">
+      </div>
+
+      <!-- ✅ Formulaire de métadonnées -->
+      <div *ngIf="selectedFile" class="upload-form">
+        <div class="form-group">
+          <label for="image-title">Titre (optionnel)</label>
+          <input 
+            id="image-title"
+            type="text" 
+            [(ngModel)]="uploadForm.title"
+            placeholder="Donnez un titre à votre image"
+            class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label for="image-description">Description (optionnel)</label>
+          <textarea 
+            id="image-description"
+            [(ngModel)]="uploadForm.description"
+            placeholder="Décrivez votre image..."
+            rows="3"
+            class="form-textarea"></textarea>
+        </div>
+
+        <div class="form-group checkbox-group">
+          <label class="checkbox-label">
+            <input 
+              type="checkbox" 
+              [(ngModel)]="uploadForm.isPublic"
+              class="checkbox-input">
+            <span class="checkbox-custom"></span>
+            <span class="checkbox-text">
+              <i class="fas" [class.fa-globe]="uploadForm.isPublic" [class.fa-lock]="!uploadForm.isPublic"></i>
+              {{ uploadForm.isPublic ? 'Image publique (visible par tous)' : 'Image privée (visible par vous seul)' }}
+            </span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeUploadModal()">
+        Annuler
+      </button>
+      <button 
+        class="btn-primary"
+        [disabled]="!selectedFile || isUploading"
+        (click)="uploadImage()">
+        <i *ngIf="!isUploading" class="fas fa-upload"></i>
+        <i *ngIf="isUploading" class="fas fa-spinner fa-spin"></i>
+        {{ isUploading ? 'Upload...' : 'Uploader' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ MODAL VISUALISATION IMAGE -->
+<div *ngIf="showImageModal && selectedImage" class="modal-overlay image-modal-overlay" (click)="closeImageModal()">
+  <div class="modal-content image-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ selectedImage.title || selectedImage.original_name }}</h3>
+      <button class="modal-close" (click)="closeImageModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body image-modal-body">
+      <div class="image-display">
+        <img [src]="selectedImage.url" [alt]="selectedImage.title" class="full-image">
+      </div>
+      
+      <div class="image-details">
+        <div class="detail-row">
+          <span class="detail-label">Nom du fichier:</span>
+          <span class="detail-value">{{ selectedImage.original_name }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Visibilité:</span>
+          <span class="detail-value visibility" [class.public]="selectedImage.is_public">
+            <i class="fas" [class.fa-globe]="selectedImage.is_public" [class.fa-lock]="!selectedImage.is_public"></i>
+            {{ selectedImage.is_public ? 'Public' : 'Privé' }}
+          </span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Uploadé le:</span>
+          <span class="detail-value">{{ selectedImage.created_at | date:'dd/MM/yyyy à HH:mm' }}</span>
+        </div>
+        <div *ngIf="selectedImage.description" class="detail-row description">
+          <span class="detail-label">Description:</span>
+          <span class="detail-value">{{ selectedImage.description }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-danger" (click)="deleteImage(selectedImage)">
+        <i class="fas fa-trash"></i>
+        Supprimer
+      </button>
+    </div>
   </div>
 </div>

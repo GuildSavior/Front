@@ -210,5 +210,154 @@
         </div>
       </div>
     </div>
+
+    <!-- ✅ Galerie d'images du joueur -->
+    <div *ngIf="player.user?.images && player.user.images.length > 0" class="gallery-section">
+      <div class="gallery-header">
+        <h3>
+          <i class="fas fa-images"></i>
+          Galerie de {{ player.name }}
+        </h3>
+        <div class="gallery-stats">
+          <span class="image-count">{{ player.user.images_count || player.user.images.length }} image{{ (player.user.images_count || player.user.images.length) > 1 ? 's' : '' }}</span>
+          <div class="view-toggle">
+            <button 
+              class="toggle-btn" 
+              [class.active]="galleryViewMode === 'grid'"
+              (click)="galleryViewMode = 'grid'">
+              <i class="fas fa-th"></i>
+            </button>
+            <button 
+              class="toggle-btn" 
+              [class.active]="galleryViewMode === 'masonry'"
+              (click)="galleryViewMode = 'masonry'">
+              <i class="fas fa-th-large"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ✅ Vue en grille classique -->
+      <div *ngIf="galleryViewMode === 'grid'" class="gallery-grid">
+        <div 
+          *ngFor="let image of player.user.images; let i = index" 
+          class="gallery-item"
+          [style.animation-delay]="i * 0.1 + 's'"
+          (click)="openImageModal(image)">
+          
+          <div class="image-container">
+            <img [src]="image.url" [alt]="image.title || image.original_name" loading="lazy">
+            <div class="image-overlay">
+              <div class="overlay-actions">
+                <button class="overlay-btn view-btn" (click)="$event.stopPropagation(); openImageModal(image)">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button class="overlay-btn expand-btn" (click)="$event.stopPropagation(); openImageModal(image)">
+                  <i class="fas fa-expand-arrows-alt"></i>
+                </button>
+              </div>
+              <div class="image-info">
+                <div class="image-title">{{ image.title || image.original_name }}</div>
+                <div class="image-meta" *ngIf="image.created_at">
+                  <span class="upload-date">{{ image.created_at | date:'dd/MM/yyyy' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ✅ Vue en mosaïque (masonry) -->
+      <div *ngIf="galleryViewMode === 'masonry'" class="gallery-masonry">
+        <div 
+          *ngFor="let image of player.user.images; let i = index" 
+          class="masonry-item"
+          [style.animation-delay]="i * 0.1 + 's'"
+          (click)="openImageModal(image)">
+          
+          <div class="masonry-container">
+            <img [src]="image.url" [alt]="image.title || image.original_name" loading="lazy">
+            <div class="masonry-overlay">
+              <div class="overlay-content">
+                <h4>{{ image.title || image.original_name }}</h4>
+                <p *ngIf="image.description">{{ image.description }}</p>
+                <div class="overlay-actions">
+                  <button class="action-btn" (click)="$event.stopPropagation(); openImageModal(image)">
+                    <i class="fas fa-expand-arrows-alt"></i>
+                    Voir en grand
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ✅ Message si pas d'images récentes mais des images existantes -->
+      <div *ngIf="player.user.recent_images && player.user.recent_images.length > 0 && (!player.user.images || player.user.images.length === 0)" class="recent-images-notice">
+        <p>
+          <i class="fas fa-info-circle"></i>
+          Ce joueur a {{ player.user.images_count }} image(s) mais seules les images publiques récentes sont affichées ici.
+        </p>
+      </div>
+    </div>
+
+    <!-- ✅ Message si aucune image -->
+    <div *ngIf="!player.user?.images || player.user.images.length === 0" class="no-gallery-section">
+      <div class="no-gallery-content">
+        <i class="fas fa-camera"></i>
+        <h4>Aucune image publique</h4>
+        <p>{{ player.name }} n'a pas encore partagé d'images publiques.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ✅ MODAL de visualisation d'image -->
+<div *ngIf="showImageModal && selectedImage" class="image-modal-overlay" (click)="closeImageModal()">
+  <div class="image-modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ selectedImage.title || selectedImage.original_name }}</h3>
+      <button class="modal-close" (click)="closeImageModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="image-display">
+        <img [src]="selectedImage.url" [alt]="selectedImage.title" class="full-image">
+      </div>
+      
+      <div class="image-details" *ngIf="selectedImage.description || selectedImage.created_at">
+        <div *ngIf="selectedImage.description" class="detail-row">
+          <span class="detail-label">Description:</span>
+          <span class="detail-value">{{ selectedImage.description }}</span>
+        </div>
+        <div *ngIf="selectedImage.created_at" class="detail-row">
+          <span class="detail-label">Uploadé le:</span>
+          <span class="detail-value">{{ selectedImage.created_at | date:'dd/MM/yyyy à HH:mm' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ Navigation entre images -->
+    <div class="modal-navigation" *ngIf="player.user.images.length > 1">
+      <button 
+        class="nav-btn prev-btn" 
+        [disabled]="getCurrentImageIndex() === 0"
+        (click)="navigateImage('prev')">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <span class="image-counter">
+        {{ getCurrentImageIndex() + 1 }} / {{ player.user.images.length }}
+      </span>
+      <button 
+        class="nav-btn next-btn" 
+        [disabled]="getCurrentImageIndex() === player.user.images.length - 1"
+        (click)="navigateImage('next')">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
   </div>
 </div>

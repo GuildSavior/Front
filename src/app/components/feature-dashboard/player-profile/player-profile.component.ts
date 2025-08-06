@@ -1,8 +1,9 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-player-profile',
@@ -11,7 +12,7 @@ import { environment } from '../../../../environments/environment';
   templateUrl: './player-profile.component.html',
   styleUrls: ['./player-profile.component.scss']
 })
-export class PlayerProfileComponent implements OnInit {
+export class PlayerProfileComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private http = inject(HttpClient);
@@ -20,6 +21,15 @@ export class PlayerProfileComponent implements OnInit {
   isLoading = true;
   errorMessage = '';
   playerId: number = 0;
+
+  // ✅ NOUVELLES propriétés pour la galerie
+  galleryViewMode: 'grid' | 'masonry' = 'grid';
+  showImageModal = false;
+  selectedImage: any = null;
+
+  // ✅ AJOUTER l'injection de PLATFORM_ID
+  private platformId = inject(PLATFORM_ID);
+  private keyDownListener?: (event: KeyboardEvent) => void;
 
   ngOnInit() {
     // ✅ Récupérer l'ID du joueur depuis l'URL
@@ -32,6 +42,12 @@ export class PlayerProfileComponent implements OnInit {
         this.isLoading = false;
       }
     });
+
+    // ✅ AJOUTER l'écoute des touches seulement côté client
+    if (isPlatformBrowser(this.platformId)) {
+      this.keyDownListener = this.onKeyDown.bind(this);
+      document.addEventListener('keydown', this.keyDownListener);
+    }
   }
 
   loadPlayerProfile() {
@@ -109,5 +125,76 @@ export class PlayerProfileComponent implements OnInit {
     const eventsScore = Math.min((this.player.events_joined || 0) * 3, 30); // 30 points max pour les événements
     
     return Math.round(levelScore + dkpScore + eventsScore);
+  }
+
+  // ✅ NOUVELLES méthodes pour la galerie
+
+  openImageModal(image: any) {
+    this.selectedImage = image;
+    this.showImageModal = true;
+    
+    // ✅ VÉRIFIER si on est dans le navigateur
+    if (isPlatformBrowser(this.platformId)) {
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  closeImageModal() {
+    this.showImageModal = false;
+    this.selectedImage = null;
+    
+    // ✅ VÉRIFIER si on est dans le navigateur
+    if (isPlatformBrowser(this.platformId)) {
+      document.body.style.overflow = 'auto';
+    }
+  }
+
+  getCurrentImageIndex(): number {
+    if (!this.selectedImage || !this.player.user?.images) return 0;
+    return this.player.user.images.findIndex((img: any) => img.id === this.selectedImage.id);
+  }
+
+  navigateImage(direction: 'prev' | 'next') {
+    if (!this.player.user?.images || !this.selectedImage) return;
+
+    const currentIndex = this.getCurrentImageIndex();
+    let newIndex = currentIndex;
+
+    if (direction === 'prev' && currentIndex > 0) {
+      newIndex = currentIndex - 1;
+    } else if (direction === 'next' && currentIndex < this.player.user.images.length - 1) {
+      newIndex = currentIndex + 1;
+    }
+
+    if (newIndex !== currentIndex) {
+      this.selectedImage = this.player.user.images[newIndex];
+    }
+  }
+
+  // ✅ Gérer les touches clavier dans le modal
+  private onKeyDown = (event: KeyboardEvent) => {
+    if (!this.showImageModal) return;
+
+    switch (event.key) {
+      case 'Escape':
+        this.closeImageModal();
+        break;
+      case 'ArrowLeft':
+        this.navigateImage('prev');
+        break;
+      case 'ArrowRight':
+        this.navigateImage('next');
+        break;
+    }
+  }
+
+  ngOnDestroy() {
+    // ✅ NETTOYER les event listeners seulement côté client
+    if (isPlatformBrowser(this.platformId)) {
+      if (this.keyDownListener) {
+        document.removeEventListener('keydown', this.keyDownListener);
+      }
+      document.body.style.overflow = 'auto';
+    }
   }
 }
