@@ -1,0 +1,39 @@
+name: Angular Deploy
+
+on:
+  push:
+    branches:
+      - main   # Déclenchement uniquement sur push sur main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Récupération du code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Installer Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18' # Vérifie ta version locale avec `node -v`
+
+      # 3. Installer les dépendances
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. Build Angular en production
+      - name: Build Angular app
+        run: npm run build -- --configuration production
+
+      # 5. Copier les fichiers sur le serveur via SCP
+      - name: Deploy via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }} # clé privée SSH (sécurisé)
+          source: "dist/front/browser/*"
+          target: "/var/www/monapp-angular/"
