@@ -238,6 +238,7 @@ export class EventsComponent implements OnInit {
       end_time: this.eventForm.end_time,
       dkp_reward: this.eventForm.dkp_reward
     };
+    console.log('🔧 Création événement:', eventData);
 
     this.eventService.createEvent(eventData).subscribe({
       next: (response) => {
