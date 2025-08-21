@@ -1,27 +1,73 @@
-# Front
+# 🎮 GuildSavior – Plateforme de gestion de guilde pour MMO
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.2.11.
+## 📌 Présentation
+GuildSavior est une application web permettant aux guildes de MMO d’organiser facilement leurs activités.  
+Elle repose sur un système de **DKP (Dragon Kill Points)** et propose une gestion complète des membres, des événements et des récompenses.  
 
-## Development server
+L’objectif est d’automatiser les processus souvent réalisés manuellement (Google Sheets, tableurs), afin de gagner en efficacité et en transparence.  
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+---
 
-## Code scaffolding
+## ✨ Fonctionnalités principales
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+### 🔑 Authentification
+- Connexion via **Discord OAuth2**  
+- Récupération automatique du profil Discord et génération d’un JWT côté backend  
 
-## Build
+### 🖥️ Dashboard utilisateur
+- Affichage des informations Discord et du profil joueur  
+- Création et gestion de son personnage en jeu  
+- Visualisation des statistiques personnelles (DKP, participation aux raids, etc.)  
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+### 💳 Paiement Premium
+- Intégration **Stripe** pour la gestion des abonnements  
+- Webhooks pour vérifier le statut du paiement (success/failed)  
+- Accès aux fonctionnalités avancées réservé aux comptes premium (guild owners)  
 
-## Running unit tests
+### 🛡️ Gestion de guilde
+- Création d’une guilde par un utilisateur premium  
+- Invitations à rejoindre la guilde via lien unique  
+- Tableau des membres : profil, DKP, participation aux événements  
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+### 📅 Événements de guilde
+- Création d’événements réservée au propriétaire de la guilde  
+- Génération automatique d’un code unique pour valider la présence des joueurs  
+- Attribution automatique de DKP aux participants  
 
-## Running end-to-end tests
+### 💰 Système d’enchères
+- Mise en place d’un marché où les membres dépensent leurs DKP  
+- Gestion des transactions et attribution des objets  
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+---
 
-## Further help
+## ⚙️ Technologies utilisées
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+### Frontend
+- **Angular** (TypeScript, RxJS)  
+- Gestion des dépendances : **npm**  
+
+### Backend
+- **Laravel (PHP)**  
+- Authentification via **OAuth2 / JWT**  
+- Gestion des dépendances : **Composer**  
+
+### Base de données
+- **MySQL**  
+
+### Intégrations externes
+- **Discord API** (connexion + futur bot d’annonce)  
+- **Stripe API** (paiement premium)  
+
+### DevOps
+- Hébergement : **Hostinger**  
+- CI/CD : **GitHub Actions**  
+- Sécurité : **HTTPS (SSL)**  
+
+---
+
+## 🛠️ Installation & Lancement
+
+### 1. Cloner le projet
+```bash
+git clone https://github.com/ton-compte/guildsavior.git
+cd guildsavior
