@@ -153,7 +153,6 @@ export class JoinGuildComponent implements OnInit {
           if (response.success) {
             this.success = response.message;
             this.joinedGuild = response.guild;
-            console.log('✅ Guilde rejointe:', response);
           } else {
             this.error = response.message || 'Erreur lors du traitement de l\'invitation';
           }

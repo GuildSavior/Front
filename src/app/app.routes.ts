@@ -6,7 +6,7 @@ import { DiscordAuthCallbackComponent } from './components/discord-auth-callback
 import { ErrorComponent } from './components/error/error.component';
 import { LogoutComponent } from './components/logout/logout.component';
 import { HomeComponent } from './components/home/home.component';
-import { GuildComponent } from './components/guild/guild.component'; // ✅ Nouveau composant
+import { GuildComponent } from './components/guild/guild.component';
 import { AuthGuard } from './auth.guard';
 import { MainLayoutComponent } from './components/layouts/main-layout/main-layout.component';
 import { LandingLayoutComponent } from './components/layouts/landing-layout/landing-layout.component';
@@ -15,6 +15,7 @@ import { MembersComponent } from './components/feature-dashboard/options/members
 import { JoinGuildComponent } from './components/join-guild/join-guild.component';
 import { EventsComponent } from './components/feature-dashboard/options/events/events.component';
 import { PlayerProfileComponent } from './components/feature-dashboard/player-profile/player-profile.component';
+import { AuctionComponent } from './components/feature-dashboard/options/auction/auction.component'; // ✅ NOUVEAU
 
 export const routes: Routes = [
   // Routes sans layout
@@ -43,6 +44,7 @@ export const routes: Routes = [
       { path: 'guild', component: GuildComponent },
       { path: 'members', component: MembersComponent },
       { path: 'events', component: EventsComponent },
+      { path: 'auction', component: AuctionComponent }, // ✅ NOUVEAU
       { path: 'join-guild/:code', component: JoinGuildComponent },
       { path: 'player/:id', component: PlayerProfileComponent }
     ]

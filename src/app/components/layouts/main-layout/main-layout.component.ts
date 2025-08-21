@@ -36,7 +36,6 @@ export class MainLayoutComponent implements OnInit {
           this.isAuthenticated = true;
           this.showDashboard = true;
           this.user = user;
-          console.log('✅ Utilisateur connecté:', this.user);
         } else {
           this.isAuthenticated = false;
           this.showDashboard = false;

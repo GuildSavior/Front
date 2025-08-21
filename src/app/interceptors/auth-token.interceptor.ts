@@ -6,9 +6,7 @@ export const authTokenInterceptor: HttpInterceptorFn = (req, next) => {
 
   let requestToSend = req;
   if(token){
-    console.log(token);
     const headers = req.headers.set('Authorization', `Bearer ${token}`);
-    console.log(headers);
     requestToSend = req.clone({
       headers: headers
     })
