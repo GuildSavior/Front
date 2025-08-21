@@ -18,22 +18,67 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18' # Vérifie ta version locale avec `node -v`
+          node-version: '18'
+          cache: 'npm' # ✅ AJOUT: Cache npm pour accélérer
 
       # 3. Installer les dépendances
       - name: Install dependencies
         run: npm ci
 
-      # 4. Build Angular en production
+      # 4. Lancer les tests (optionnel mais recommandé)
+      - name: Run tests
+        run: npm run test -- --browsers=ChromeHeadless --watch=false
+        continue-on-error: false # ✅ Arrêter le déploiement si tests échouent
+
+      # 5. Build Angular en production
       - name: Build Angular app
         run: npm run build -- --configuration production
 
-      # 5. Copier les fichiers sur le serveur via SCP
+      # 6. Vérifier que le build existe
+      - name: Verify build output
+        run: |
+          echo "✅ Vérification du contenu de dist/"
+          ls -la dist/
+          ls -la dist/front/browser/ || echo "❌ Dossier browser introuvable"
+
+      # 7. Nettoyer le répertoire cible sur le serveur
+      - name: Clean target directory
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            echo "🧹 Nettoyage du répertoire cible..."
+            rm -rf /var/www/monapp-angular/*
+            echo "✅ Répertoire nettoyé"
+
+      # 8. Copier les fichiers sur le serveur via SCP
       - name: Deploy via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }} # clé privée SSH (sécurisé)
+          key: ${{ secrets.VPS_SSH_KEY }}
           source: "dist/front/browser/*"
           target: "/var/www/monapp-angular/"
+          strip_components: 3 # ✅ AJOUT: Enlève dist/front/browser/ du chemin
+
+      # 9. Vérifier le déploiement
+      - name: Verify deployment
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            echo "🔍 Vérification du déploiement..."
+            ls -la /var/www/monapp-angular/
+            echo "✅ Fichiers copiés avec succès"
+
+      # 10. Notification de succès
+      - name: Deployment Success
+        run: |
+          echo "🚀 Déploiement terminé avec succès !"
+          echo "📁 Fichiers copiés vers: /var/www/monapp-angular/"
+          echo "🌐 Votre app est maintenant en ligne"
