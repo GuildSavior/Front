@@ -28,13 +28,11 @@ export class PlanShowcaseComponent implements OnInit {
 
     // Si on revient du login Discord avec l'intention d'acheter le premium
     if (localStorage.getItem('pendingPremium') === '1') {
-      console.log('Intention d\'achat détectée, vérification auth...');
       localStorage.removeItem('pendingPremium');
       
       const token = this.getCookie('auth_token');
       
       if (!token) {
-        console.log('Pas de token trouvé, utilisateur pas encore connecté');
         return;
       }
 
@@ -45,23 +43,29 @@ export class PlanShowcaseComponent implements OnInit {
       // ✅ MODIFIER: Vérifier l'abonnement avant de lancer Stripe
       this.http.get<any>(`${environment.apiUrl}/user`, { headers }).subscribe({
         next: (user) => {
-          console.log('Utilisateur connecté après login Discord:', user);
           // ✅ Vérifier avec tes vraies propriétés
           const hasSubscription = user.is_premium === true || 
                                  (user.subscription && user.subscription.status === 'active');
           
           if (hasSubscription) {
-            console.log('✅ Utilisateur déjà abonné, redirection vers dashboard');
-            alert('Vous êtes déjà abonné ! Redirection vers votre dashboard...');
-            this.router.navigate(['/dashboard']);
+            this.notificationService.success(
+              'Déjà Premium !',
+              'Vous êtes déjà abonné. Redirection vers votre dashboard...'
+            );
+
+            setTimeout(() => {
+              this.router.navigate(['/dashboard']);
+            }, 2000);
             return;
           }
           
-          console.log('Utilisateur pas encore abonné, lancement Stripe...');
           this.launchStripe(headers);
         },
         error: () => {
-          console.log('Utilisateur pas encore connecté après Discord, on attend...');
+          this.notificationService.error(
+            'Erreur de vérification',
+            'Impossible de vérifier votre statut d\'abonnement.'
+          );
         }
       });
     }
@@ -72,7 +76,6 @@ export class PlanShowcaseComponent implements OnInit {
     const token = this.getCookie('auth_token');
     
     if (!token) {
-      console.log('Pas de token, utilisateur non connecté');
       return;
     }
 
@@ -82,7 +85,6 @@ export class PlanShowcaseComponent implements OnInit {
 
     this.http.get<any>(`${environment.apiUrl}/user`, { headers }).subscribe({
       next: (user) => {
-        console.log('Statut utilisateur:', user);
         
         // ✅ Vérifier avec tes vraies propriétés
         const hasSubscription = user.is_premium === true || 
@@ -102,18 +104,20 @@ export class PlanShowcaseComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.log('Erreur lors de la vérification du statut:', error);
       }
     });
   }
 
-  goPremium() {
-    console.log("Tentative de lancement de l'achat premium");
-    
-    const token = this.getCookie('auth_token');
-    
-    if (token) {
-      const headers = new HttpHeaders({
+    goPremium() {
+      this.notificationService.info(
+        'Connexion requise',
+        'Connectez-vous avec Discord pour continuer...'
+      );
+
+      const token = this.getCookie('auth_token');
+
+      if (token) {
+        const headers = new HttpHeaders({
         'Authorization': `Bearer ${token}`
       });
 
@@ -179,7 +183,6 @@ export class PlanShowcaseComponent implements OnInit {
       withCredentials: true
     }).subscribe({
       next: (res) => {
-        console.log('✅ Session Stripe créée:', res);
         // ✅ AJOUTER notification de succès
         this.notificationService.success(
           'Redirection...',

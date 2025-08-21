@@ -1,1 +1,300 @@
-<p>auction works!</p>
+<div class="auction-container">
+  <!-- Header -->
+  <div class="auction-header">
+    <div class="header-content">
+      <div class="header-title">
+        <h1><i class="fas fa-gavel mr-3"></i>Enchères de Guilde</h1>
+        <p>Système d'enchères DKP</p>
+      </div>
+      
+      <div class="header-actions" *ngIf="user">
+        <div class="dkp-display">
+          <i class="fas fa-coins mr-2"></i>
+          <span>{{ userDkp }} DKP</span>
+        </div>
+        
+        <button 
+          *ngIf="isGuildOwner"
+          class="btn-primary"
+          (click)="showCreateForm()"
+          [disabled]="isCreatingAuction">
+          <i class="fas fa-plus mr-2"></i>
+          Créer Enchère
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Chargement des enchères...</p>
+  </div>
+
+  <!-- Contenu principal -->
+  <div *ngIf="!isLoading" class="auction-content">
+    
+    <!-- Formulaire de création -->
+    <div *ngIf="isCreatingAuction" class="create-auction-section">
+      <div class="create-auction-header">
+        <h2><i class="fas fa-plus-circle mr-2"></i>Créer une Enchère</h2>
+        <button class="btn-secondary" (click)="cancelCreate()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <form class="auction-form" (ngSubmit)="createAuction()">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="item_name">Nom de l'objet *</label>
+            <input
+              type="text"
+              id="item_name"
+              [(ngModel)]="auctionForm.item_name"
+              name="item_name"
+              required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="description">Description</label>
+            <textarea
+              id="description"
+              [(ngModel)]="auctionForm.description"
+              name="description"></textarea>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="starting_price">Prix de départ (DKP) *</label>
+            <input
+              type="number"
+              id="starting_price"
+              [(ngModel)]="auctionForm.starting_price"
+              name="starting_price"
+              min="1"
+              required>
+          </div>
+          
+          <div class="form-group">
+            <label for="buyout_price">Prix d'achat instantané (DKP)</label>
+            <input
+              type="number"
+              id="buyout_price"
+              [(ngModel)]="auctionForm.buyout_price"
+              name="buyout_price"
+              [min]="auctionForm.starting_price + 1">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="start_time">Début *</label>
+            <input
+              type="datetime-local"
+              id="start_time"
+              [(ngModel)]="auctionForm.start_time"
+              name="start_time"
+              required>
+          </div>
+          
+          <div class="form-group">
+            <label for="end_time">Fin *</label>
+            <input
+              type="datetime-local"
+              id="end_time"
+              [(ngModel)]="auctionForm.end_time"
+              name="end_time"
+              required>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="cancelCreate()">
+            Annuler
+          </button>
+          <button type="submit" class="btn-primary" [disabled]="isSubmitting">
+            <span *ngIf="isSubmitting">
+              <i class="fas fa-spinner fa-spin mr-2"></i>
+              Création...
+            </span>
+            <span *ngIf="!isSubmitting">
+              <i class="fas fa-plus mr-2"></i>
+              Créer l'Enchère
+            </span>
+          </button>
+        </div>
+
+        <div *ngIf="errorMessage" class="error-message">
+          <i class="fas fa-exclamation-circle mr-2"></i>
+          {{ errorMessage }}
+        </div>
+      </form>
+    </div>
+
+    <!-- Tabs pour filtrer les enchères -->
+    <div class="auction-tabs" style="margin-bottom:2rem;">
+      <button 
+        class="btn-secondary"
+        [class.active-tab]="tab === 'all'"
+        (click)="tab = 'all'">
+        Toutes les enchères
+      </button>
+      <button 
+        class="btn-secondary"
+        [class.active-tab]="tab === 'active'"
+        (click)="tab = 'active'">
+        Enchères actives
+      </button>
+      <button 
+        class="btn-secondary"
+        [class.active-tab]="tab === 'upcoming'"
+        (click)="tab = 'upcoming'">
+        Enchères à venir
+      </button>
+    </div>
+
+    <!-- Liste des enchères -->
+    <div class="auctions-grid" *ngIf="filteredAuctions.length > 0">
+      <div 
+        *ngFor="let auction of filteredAuctions"
+        class="auction-card"
+        [class.auction-ended]="auction.status === 'ended'"
+        [class.auction-upcoming]="auction.status === 'upcoming'"
+        [class.auction-active]="auction.status === 'active'">
+        
+        <!-- Header de la carte -->
+        <div class="auction-card-header">
+          <div class="auction-item-info">
+            <h3>{{ auction.item_name }}</h3>
+            <span 
+  class="auction-status"
+  [ngClass]="getAuctionStatusColor(auction.status)">
+  {{ getAuctionStatusLabel(auction.status) }}
+</span>
+          </div>
+          
+          <div class="auction-actions">
+            <span class="auction-time" *ngIf="auction.time_remaining">
+              <i class="fas fa-clock mr-1"></i>
+              {{ auction.time_remaining }}
+            </span>
+            
+            <button 
+              *ngIf="isGuildOwner && auction.is_owner && auction.status !== 'ended' && auction.status !== 'cancelled'"
+              class="btn-danger-small"
+              (click)="deleteAuction(auction)"
+              title="Annuler l'enchère">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="auction-description" *ngIf="auction.description">
+          <p>{{ auction.description }}</p>
+        </div>
+
+        <!-- Informations sur les prix -->
+        <div class="auction-pricing">
+          <div class="price-info">
+            <div class="price-item">
+              <span class="price-label">Prix de départ:</span>
+              <span class="price-value">{{ auction.starting_price }} DKP</span>
+            </div>
+            
+            <div class="price-item">
+              <span class="price-label">Enchère actuelle:</span>
+              <span class="price-value current-price">{{ auction.current_bid }} DKP</span>
+            </div>
+            
+            <div class="price-item" *ngIf="auction.buyout_price">
+              <span class="price-label">Achat instantané:</span>
+              <span class="price-value buyout-price">{{ auction.buyout_price }} DKP</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Informations sur l'enchérisseur -->
+        <div class="auction-bidder" *ngIf="auction.current_winner">
+        <i class="fas fa-user mr-2"></i>
+        <span>Enchérisseur: {{ auction.current_winner }}</span>
+        </div>
+
+        <!-- Actions d'enchère -->
+        <div class="auction-bid-section" *ngIf="auction.can_bid && auction.status === 'active'">
+          <div class="bid-input-group">
+            <input
+              type="number"
+              [(ngModel)]="bidAmounts[auction.id]"
+              [min]="auction.minimum_bid"
+              [max]="userDkp"
+              class="bid-input"
+              placeholder="Montant DKP">
+            
+            <button 
+              class="btn-primary"
+              (click)="placeBid(auction)"
+              [disabled]="!bidAmounts[auction.id] || bidAmounts[auction.id] < auction.minimum_bid">
+              <i class="fas fa-gavel mr-2"></i>
+              Enchérir
+            </button>
+          </div>
+        </div>
+
+        <!-- Bouton d'achat instantané -->
+        <div class="auction-buyout-section" *ngIf="auction.can_buyout && auction.status === 'active'">
+          <button 
+            class="btn-success"
+            (click)="buyoutAuction(auction)">
+            <i class="fas fa-bolt mr-2"></i>
+            Acheter pour {{ auction.buyout_price }} DKP
+          </button>
+        </div>
+
+        <!-- Pied de carte -->
+        <div class="auction-card-footer">
+          <div class="auction-dates">
+            <div class="date-item">
+              <i class="fas fa-calendar-plus mr-1"></i>
+              <span>Début: {{ auction.start_time | date:'short' }}</span>
+            </div>
+            <div class="date-item">
+              <i class="fas fa-calendar-times mr-1"></i>
+              <span>Fin: {{ auction.end_time | date:'short' }}</span>
+            </div>
+          </div>
+
+          <!-- ✅ Ajoute ceci pour afficher le vainqueur en or si l'enchère est terminée et a un winner -->
+          <div 
+            *ngIf="auction.status === 'ended' && auction.winner"
+            class="auction-winner"
+            style="margin-top: 0.5rem;">
+            <i class="fas fa-trophy" style="color:gold; margin-right:4px;"></i>
+            <span style="color:gold; font-weight:700;">
+              Vainqueur : {{ auction.winner }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- État vide -->
+    <div *ngIf="auctions.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <i class="fas fa-gavel"></i>
+      </div>
+      <h3>Aucune enchère</h3>
+      <p>Il n'y a actuellement aucune enchère dans votre guilde.</p>
+      <button 
+        *ngIf="isGuildOwner"
+        class="btn-primary"
+        (click)="showCreateForm()">
+        <i class="fas fa-plus mr-2"></i>
+        Créer la première enchère
+      </button>
+    </div>
+  </div>
+</div>

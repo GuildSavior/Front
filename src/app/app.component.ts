@@ -15,8 +15,4 @@ export class AppComponent {
   loginService = inject(LoginService);
   user = this.loginService.user;
   title = 'GuildSavior';
-
-  ngOnInit(): void {
-    console.log(this.user);
-  }
 }

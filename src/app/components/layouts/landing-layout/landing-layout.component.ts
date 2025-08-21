@@ -33,7 +33,6 @@ export class LandingLayoutComponent implements OnInit {
           this.isAuthenticated = true;
           this.user = repsonse.user;
           this.avatarError = false;
-          console.log('✅ Utilisateur connecté dans navbar:', this.user);
         } else {
           this.isAuthenticated = false;
           this.user = null;
