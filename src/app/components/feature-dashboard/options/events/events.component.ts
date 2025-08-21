@@ -212,7 +212,7 @@ export class EventsComponent implements OnInit {
 
   // ✅ CRÉER UN ÉVÉNEMENT - Corriger
   createEvent() {
-    if (!this.eventForm.name.trim()) { // ✅ Corriger: name au lieu de title
+    if (!this.eventForm.name.trim()) {
       this.errorMessage = 'Le nom de l\'événement est obligatoire.';
       return;
     }
@@ -231,14 +231,23 @@ export class EventsComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
+    // ✅ CORRIGER : Convertir les dates pour éviter le décalage timezone
     const eventData = {
-      name: this.eventForm.name.trim(), // ✅ Corriger
+      name: this.eventForm.name.trim(),
       description: this.eventForm.description.trim(),
-      start_time: this.eventForm.start_time,
-      end_time: this.eventForm.end_time,
+      start_time: this.formatDateForBackend(this.eventForm.start_time), // ✅ NOUVEAU
+      end_time: this.formatDateForBackend(this.eventForm.end_time),     // ✅ NOUVEAU
       dkp_reward: this.eventForm.dkp_reward
     };
-    console.log('🔧 Création événement:', eventData);
+
+    if (environment.enableDebugLogs) {
+      console.log('🔧 Event data avant envoi:', {
+        original_start: this.eventForm.start_time,
+        original_end: this.eventForm.end_time,
+        formatted_start: eventData.start_time,
+        formatted_end: eventData.end_time
+      });
+    }
 
     this.eventService.createEvent(eventData).subscribe({
       next: (response) => {
@@ -436,6 +445,36 @@ export class EventsComponent implements OnInit {
     
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   }
+
+formatDateForBackend(localDateTime: string): string {
+  if (!localDateTime) return '';
+  
+  // ✅ PROBLÈME IDENTIFIÉ: new Date() peut faire des conversions automatiques
+  // Solution: parser manuellement la chaîne datetime-local
+  
+  // ✅ CORRECTION: Parser directement sans passer par Date()
+  // Format attendu: "2025-01-20T20:00" -> "2025-01-20 20:00:00"
+  
+  const [datePart, timePart] = localDateTime.split('T');
+  
+  if (!datePart || !timePart) {
+    console.error('❌ Format de date invalide:', localDateTime);
+    return localDateTime;
+  }
+  
+  // ✅ Retourner directement sans conversion timezone
+  const formattedDate = `${datePart} ${timePart}:00`;
+  
+  if (environment.enableDebugLogs) {
+    console.log('🔧 Date conversion CORRIGÉE:', {
+      input: localDateTime,
+      output: formattedDate,
+      note: 'Pas de conversion timezone - heure locale préservée'
+    });
+  }
+  
+  return formattedDate;
+}
 
   isEventUpcoming(event: Event): boolean {
     return new Date(event.start_time) > new Date();

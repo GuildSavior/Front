@@ -152,14 +152,6 @@
           <span *ngIf="!showInvitations">Inviter des membres</span>
           <span *ngIf="showInvitations">Masquer les invitations</span>
         </button>
-        
-        <button 
-          class="action-btn" 
-          (click)="showGuildSettings()"
-          [disabled]="!isGuildOwner">
-          <i class="fas fa-cog mr-2"></i>
-          Paramètres
-        </button>
 
         <!-- ✅ BOUTON pour quitter la guilde (membres) -->
         <button 

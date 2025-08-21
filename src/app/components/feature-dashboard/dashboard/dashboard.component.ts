@@ -348,7 +348,7 @@ export class DashboardComponent implements OnInit {
   }
 
   deletePlayerProfile() {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer votre profil joueur ? Cette action est irréversible. VOUS PERDREZ TOUT VOS DKP !')) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer votre profil joueur ?')) {
       return;
     }
 
