@@ -86,7 +86,7 @@ export class LandingLayoutComponent implements OnInit {
     this.showDropdown = false;
   }
   goToAuctions() {
-    this.router.navigate(['/auctions']);
+    this.router.navigate(['/auction']);
     this.showDropdown = false;
   }
   goToEvents() {
